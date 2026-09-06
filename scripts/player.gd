@@ -530,12 +530,13 @@ func _update_animations(direction: float):
 		return
 
 	if is_earthwalking:
-		if direction != 0:
-			if animated_sprite_2d.animation != "earthwalk":
+		if animated_sprite_2d.animation != "earthwalk":
 				animated_sprite_2d.play("earthwalk")
+		if direction != 0:
+			if animated_sprite_2d.animation == "earthwalk" && !animated_sprite_2d.is_playing():
+				animated_sprite_2d.play()
 		else:
-			if animated_sprite_2d.animation != "earthstand":
-				animated_sprite_2d.play("earthstand")
+			animated_sprite_2d.pause()
 		return
 	elif is_on_floor():
 		if direction != 0:
