@@ -15,12 +15,18 @@ const EARTHWALK_BOUNDARY_INSET = 0.01
 const DIG_OUT_VISUAL_OFFSET = 16.0
 const DIG_OUT_DOWN_VISUAL_OFFSET = 5.0
 const DEBUG_DIG_OUT = false
-const DEBUG_EARTHWALK = true
+const DEBUG_EARTHWALK = false
 
 # --- IDLE TIMER VARIABLES ---
 const IDLE_TIMEOUT = 6.0       # Time in seconds before playing special idle
+const IDLE_SIT_TIMEOUT = 12.0
+const IDLE_TIRED_TIMEOUT = 20.0
+const IDLE_SLEEP_TIMEOUT = 30.0
 var idle_timer = 0.0           # Tracks elapsed time since last activity
 var is_deep_idle = false       # Flips to true when the timer expires
+var is_deep_idle_sit = false       # Flips to true when the timer expires
+var is_deep_idle_tired = false       # Flips to true when the timer expires
+var is_deep_idle_sleep = false       # Flips to true when the timer expires
 
 var is_digging = false
 var is_digging_out = false
@@ -39,6 +45,7 @@ func _ready():
 	sprite_rest_position = animated_sprite_2d.position
 	animated_sprite_2d.animation_finished.connect(_on_animation_finished)
 	animated_sprite_2d.sprite_frames.set_animation_speed("jumping", 10.0)
+	animated_sprite_2d.sprite_frames.set_animation_speed("idlesleep", 0.5)
 
 func _physics_process(delta):
 	# Track if the player did any manual action this frame
@@ -71,10 +78,19 @@ func _physics_process(delta):
 	if player_active or velocity.x != 0 or not is_on_floor():
 		idle_timer = 0.0
 		is_deep_idle = false
+		is_deep_idle_sit = false
+		is_deep_idle_tired = false
+		is_deep_idle_sleep = false
 	else:
 		idle_timer += delta
 		if idle_timer >= IDLE_TIMEOUT:
 			is_deep_idle = true
+		if idle_timer >= IDLE_SIT_TIMEOUT:
+			is_deep_idle_sit = true
+		if idle_timer >= IDLE_TIRED_TIMEOUT:
+			is_deep_idle_tired = true
+		if idle_timer >= IDLE_SLEEP_TIMEOUT:
+			is_deep_idle_sleep = true
 
 	# ASSIGN ANIMATIONS
 	_update_animations(direction)
@@ -545,7 +561,16 @@ func _update_animations(direction: float):
 				animated_sprite_2d.play("walking")
 		else:
 			# If the player has been still long enough, play deep idle animation
-			if is_deep_idle:
+			if is_deep_idle_sleep:
+				if animated_sprite_2d.animation != "idlesleep":
+					animated_sprite_2d.play("idlesleep")
+			elif is_deep_idle_tired:
+				if animated_sprite_2d.animation != "idletired":
+					animated_sprite_2d.play("idletired")
+			elif is_deep_idle_sit:
+				if animated_sprite_2d.animation != "idlesit":
+					animated_sprite_2d.play("idlesit")
+			elif is_deep_idle:
 				if animated_sprite_2d.animation != "idle":
 					animated_sprite_2d.play("idle")
 			else:
