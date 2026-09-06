@@ -12,9 +12,13 @@ const EARTHWALK_SPRITE_MIN = Vector2(-7.0, -14.0)
 const EARTHWALK_SPRITE_MAX = Vector2(7.0, 0.0)
 # Keeps the footprint inside the cell; an exact maximum edge maps to the next TileMap cell.
 const EARTHWALK_BOUNDARY_INSET = 0.01
-# One tile/character length used to position rotated dig-out visuals in their exit direction.
-const DIG_OUT_VISUAL_OFFSET = 16.0
-const DIG_OUT_DOWN_VISUAL_OFFSET = 5.0
+# The exported animation frames use a 64x42 canvas.
+const GNOME_FRAME_HEIGHT = 42.0
+# A rotated frame is 42px wide, so move it fully out on the horizontal axis.
+const DIG_OUT_SIDE_VISUAL_OFFSET = GNOME_FRAME_HEIGHT
+const DIG_OUT_SIDE_VERTICAL_OFFSET = -5.0
+# A flipped frame needs to move down its full height to sit beneath the tile.
+const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT
 const EXPLOSION_HOLD_DURATION = 0.25
 const DEBUG_DIG_OUT = false
 const DEBUG_EARTHWALK = false
@@ -441,8 +445,8 @@ func _set_dig_out_orientation(exit_direction: Vector2i):
 			animated_sprite_2d.position = sprite_rest_position.rotated(-PI / 2.0)
 		
 	if exit_direction == Vector2i.LEFT or exit_direction == Vector2i.RIGHT:
-		animated_sprite_2d.position.y -= DIG_OUT_VISUAL_OFFSET / 2.0
-		animated_sprite_2d.position += Vector2(exit_direction) * DIG_OUT_VISUAL_OFFSET
+			animated_sprite_2d.position.x += exit_direction.x * DIG_OUT_SIDE_VISUAL_OFFSET
+			animated_sprite_2d.position.y += DIG_OUT_SIDE_VERTICAL_OFFSET
 
 
 func _get_cell_with_most_player_overlap(local_player_position: Vector2) -> Vector2i:
