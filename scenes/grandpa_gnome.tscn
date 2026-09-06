@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://b0gpbuy7ifjnn"]
+
+[ext_resource type="Texture2D" uid="uid://c3eifjyjpjc2h" path="res://assets/sprites/first_gnome_test.png" id="1_ka1w0"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p1v04"]
+atlas = ExtResource("1_ka1w0")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_yf5fn"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p1v04")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" unique_id=1692861627]
+sprite_frames = SubResource("SpriteFrames_yf5fn")

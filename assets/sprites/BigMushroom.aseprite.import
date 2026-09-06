@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://cv6ojcvryadvr"
+path="res://.godot/imported/BigMushroom.aseprite-61f2708cd2acf12c380fcbb58d689a58.res"
+
+[deps]
+
+source_file="res://assets/sprites/BigMushroom.aseprite"
+dest_files=["res://.godot/imported/BigMushroom.aseprite-61f2708cd2acf12c380fcbb58d689a58.res"]
+
+[params]
+

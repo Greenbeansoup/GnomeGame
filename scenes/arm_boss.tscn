@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cb5h7nvecv34m"]
+
+[ext_resource type="Texture2D" uid="uid://d1t1r640xgowi" path="res://assets/sprites/Mutated_Arm_Gnome_concept_art.png" id="1_80uib"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w2cn3"]
+atlas = ExtResource("1_80uib")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_yf5fn"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w2cn3")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fpvtf"]
+size = Vector2(102, 20)
+
+[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1735214254]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1163784908]
+position = Vector2(0, -66)
+sprite_frames = SubResource("SpriteFrames_yf5fn")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1422020509]
+position = Vector2(1, -71)
+shape = SubResource("RectangleShape2D_fpvtf")

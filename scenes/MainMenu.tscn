@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://bxgaqn2qjbj4w"]
+
+[ext_resource type="FontFile" uid="uid://b1gbvxr5lgyi1" path="res://assets/fonts/PixelOperator8.ttf" id="1_0ykhv"]
+[ext_resource type="Script" uid="uid://b5s840jjqm67g" path="res://scripts/main_menu.gd" id="1_2wh52"]
+[ext_resource type="PackedScene" uid="uid://b0gpbuy7ifjnn" path="res://scenes/grandpa_gnome.tscn" id="3_2wh52"]
+[ext_resource type="Texture2D" uid="uid://cwh85xd3dw1ee" path="res://assets/sprites/Background.png" id="4_ow34m"]
+
+[node name="MainMenu" type="Control" unique_id=1332447442]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2wh52")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1056446749]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.0
+offset_top = -120.0
+offset_right = 119.0
+offset_bottom = 124.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Start" type="Button" parent="VBoxContainer" unique_id=1298767101]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_0ykhv")
+text = "Start"
+flat = true
+
+[node name="Exit" type="Button" parent="VBoxContainer" unique_id=698920222]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_0ykhv")
+text = "Exit"
+flat = true
+
+[node name="AnimatedSprite2D" parent="VBoxContainer" unique_id=1692861627 instance=ExtResource("3_2wh52")]
+position = Vector2(430.49994, 166.49997)
+scale = Vector2(9.406248, 9.406248)
+flip_h = true
+
+[node name="Background" type="Sprite2D" parent="." unique_id=2081802426]
+z_index = -1
+position = Vector2(628.125, 437.12494)
+scale = Vector2(6.1162105, 6.1162105)
+texture = ExtResource("4_ow34m")
+
+[node name="Label" type="Label" parent="." unique_id=1551120030]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -71.0
+offset_top = 92.0
+offset_right = 71.0
+offset_bottom = 115.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("1_0ykhv")
+theme_override_font_sizes/font_size = 24
+text = "Gnome Game"

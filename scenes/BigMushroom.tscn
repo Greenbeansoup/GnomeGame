@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://e070owcud22m"]
+
+[ext_resource type="Script" uid="uid://cda1rt03g4vqg" path="res://scripts/big_mushroom.gd" id="1_otqk5"]
+[ext_resource type="Texture2D" uid="uid://bm1n2aqe7dt53" path="res://assets/sprites/BigMushroom.png" id="1_p8jeb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_otqk5"]
+atlas = ExtResource("1_p8jeb")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_g4v7s"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_otqk5")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="StaticBody2D" type="StaticBody2D" unique_id=797032271]
+script = ExtResource("1_otqk5")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=544158492]
+position = Vector2(0, -17)
+sprite_frames = SubResource("SpriteFrames_g4v7s")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=2041308691]
+position = Vector2(1, -20)
+polygon = PackedVector2Array(-15, -1, -4, -5, 2, -5, 13, -1, 12, 2, -14, 2)
+one_way_collision = true
