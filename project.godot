@@ -22,7 +22,6 @@ import/import_plugin/default_automatic_importer="SpriteFrames"
 [display]
 
 window/stretch/mode="viewport"
-window/stretch/aspect="expand"
 
 [editor_plugins]
 
