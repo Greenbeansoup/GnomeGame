@@ -30,15 +30,15 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rvk65")
 }],
-"loop": 1,
-"name": &"Animation",
+"loop": 0,
+"name": &"Bounce",
 "speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rvk65")
 }],
-"loop": 1,
+"loop": 0,
 "name": &"Default",
 "speed": 10.0
 }]
@@ -71,7 +71,7 @@ metadata/_aseprite_wizard_config_ = {
 "source": "res://assets/sprites/BigMushroom.aseprite",
 "source_uid": 6311669042496681287
 }
-metadata/_aseprite_wizard_source_file_hash_ = "46ed215d6d9bce6e0ac483349e83d3b8"
+metadata/_aseprite_wizard_source_file_hash_ = "f56eb47a63c3b88f8cf1e7a9dec44a0e"
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=2041308691]
 position = Vector2(1, -20)
