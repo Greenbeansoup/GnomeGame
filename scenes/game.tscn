@@ -238,10 +238,6 @@ position = Vector2(3.0000076, -348)
 scale = Vector2(5.7499995, 5.7499995)
 texture = ExtResource("1_iywne")
 
-[node name="CharacterBody2D" parent="Parallax2D" unique_id=1735214254 instance=ExtResource("2_gee14")]
-z_index = 1
-position = Vector2(-140, -711)
-
 [node name="Player" parent="." unique_id=2073979239 node_paths=PackedStringArray("tile_map_layer") instance=ExtResource("1_uwrxv")]
 z_index = 5
 position = Vector2(-96, -34)
@@ -339,3 +335,7 @@ offset_bottom = -796.0
 theme_override_fonts/font = ExtResource("9_0tnpc")
 theme_override_font_sizes/font_size = 8
 text = "To be continued..."
+
+[node name="CharacterBody2D" parent="." unique_id=1735214254 instance=ExtResource("2_gee14")]
+z_index = 1
+position = Vector2(-140, -711)
