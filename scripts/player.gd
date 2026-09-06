@@ -5,6 +5,7 @@ extends CharacterBody2D
 @export var tile_map_layer: TileMapLayer
 
 const SPEED = 130.0
+const SPRINT_SPEED = SPEED * 1.5
 const JUMP_VELOCITY = -250.0
 # 14x14 earthwalk footprint centered at the sprite's local position of (0, -7).
 const EARTHWALK_SPRITE_MIN = Vector2(-7.0, -14.0)
@@ -40,6 +41,12 @@ enum MovementMode { DEFAULT, EARTHWALK }
 var movement_mode = MovementMode.DEFAULT
 var sprite_rest_position: Vector2
 var log_next_default_movement = false
+
+var is_sprinting = false
+
+@export var coyote_time: float = 0.075
+var coyote_timer = 0.0
+
 
 func _ready():
 	sprite_rest_position = animated_sprite_2d.position
@@ -106,16 +113,20 @@ func _process_default_movement(delta):
 	# 1. APPLY GRAVITY
 	if not is_on_floor() and not is_earthwalking:
 		velocity += get_gravity() * delta
+		coyote_timer += delta
+	else:
+		coyote_timer = 0.0
 
 	# 2. HANDLE JUMP
-	if Input.is_action_just_pressed("jump") and is_on_floor():
+	if Input.is_action_just_pressed("jump") and (is_on_floor() or coyote_timer < coyote_time):
 		velocity.y = JUMP_VELOCITY
 		player_active = true
 
 	# 3. HANDLE HORIZONTAL MOVEMENT
 	var direction = Input.get_axis("left", "right")
 	if direction:
-		velocity.x = direction * SPEED
+		is_sprinting = Input.is_action_pressed("sprint")
+		velocity.x = direction * (SPRINT_SPEED if is_sprinting else SPEED)
 		animated_sprite_2d.flip_h = (direction < 0)
 		player_active = true
 	else:
@@ -557,7 +568,10 @@ func _update_animations(direction: float):
 		return
 	elif is_on_floor():
 		if direction != 0:
-			if animated_sprite_2d.animation != "walking":
+			if is_sprinting:
+				if animated_sprite_2d.animation != "sprinting":
+					animated_sprite_2d.play("sprinting")
+			elif animated_sprite_2d.animation != "walking":
 				animated_sprite_2d.play("walking")
 		else:
 			# If the player has been still long enough, play deep idle animation
