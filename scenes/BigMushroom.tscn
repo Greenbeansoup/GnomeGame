@@ -8,15 +8,15 @@ size_override = Vector2(64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_otqk5"]
 atlas = SubResource("PortableCompressedTexture2D_p8jeb")
-region = Rect2(0, 0, 32, 32)
+region = Rect2(32, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2liri"]
 atlas = SubResource("PortableCompressedTexture2D_p8jeb")
-region = Rect2(32, 0, 32, 32)
+region = Rect2(0, 32, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rvk65"]
 atlas = SubResource("PortableCompressedTexture2D_p8jeb")
-region = Rect2(0, 32, 32, 32)
+region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_vjsxa"]
 animations = [{
@@ -29,21 +29,18 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rvk65")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_otqk5")
 }],
-"loop": 0,
-"name": &"bounce",
+"loop": 1,
+"name": &"Animation",
 "speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_otqk5")
+"texture": SubResource("AtlasTexture_rvk65")
 }],
-"loop": 0,
-"name": &"default",
-"speed": 5.0
+"loop": 1,
+"name": &"Default",
+"speed": 10.0
 }]
 
 [node name="StaticBody2D" type="StaticBody2D" unique_id=797032271]
@@ -53,9 +50,10 @@ script = ExtResource("1_otqk5")
 texture_filter = 1
 position = Vector2(0, -17)
 sprite_frames = SubResource("SpriteFrames_vjsxa")
+animation = &"Default"
 metadata/_aseprite_wizard_interface_config_ = {
 "animation_section": true,
-"layer_section": false,
+"layer_section": true,
 "output_section": true,
 "pending_changes": {},
 "slice_section": true
@@ -73,7 +71,7 @@ metadata/_aseprite_wizard_config_ = {
 "source": "res://assets/sprites/BigMushroom.aseprite",
 "source_uid": 6311669042496681287
 }
-metadata/_aseprite_wizard_source_file_hash_ = "3db882ba4119e5dbab89aed3b9275a09"
+metadata/_aseprite_wizard_source_file_hash_ = "46ed215d6d9bce6e0ac483349e83d3b8"
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=2041308691]
 position = Vector2(1, -20)

@@ -10,11 +10,11 @@ func _on_ready():
 	animated_sprite_2d.animation_finished.connect(_on_animation_finished)
 
 func _on_animation_finished():
-	if animated_sprite_2d.animation == "bounce":
-		animated_sprite_2d.play("default")
+	if animated_sprite_2d.animation == "Animation":
+		animated_sprite_2d.play("Default")
 
 func bounce(body: CharacterBody2D, impact_velocity: Vector2) -> void:
-	animated_sprite_2d.play("bounce")
+	animated_sprite_2d.play("Animation")
 	
 	# transform.y is local down; its inverse launches away from the mushroom surface.
 	var launch_direction = -global_transform.y
