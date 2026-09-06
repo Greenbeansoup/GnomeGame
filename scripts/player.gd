@@ -38,6 +38,7 @@ var log_next_default_movement = false
 func _ready():
 	sprite_rest_position = animated_sprite_2d.position
 	animated_sprite_2d.animation_finished.connect(_on_animation_finished)
+	animated_sprite_2d.sprite_frames.set_animation_speed("jumping", 10.0)
 
 func _physics_process(delta):
 	# Track if the player did any manual action this frame
