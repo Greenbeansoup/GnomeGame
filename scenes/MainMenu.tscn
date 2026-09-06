@@ -27,6 +27,7 @@ offset_right = 119.0
 offset_bottom = 124.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 24
 
 [node name="Start" type="Button" parent="VBoxContainer" unique_id=1298767101]
 layout_mode = 2
@@ -62,5 +63,5 @@ offset_right = 71.0
 offset_bottom = 115.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("1_0ykhv")
-theme_override_font_sizes/font_size = 24
-text = "Gnome Game"
+theme_override_font_sizes/font_size = 36
+text = "G-nome"
