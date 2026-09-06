@@ -15,6 +15,7 @@ const EARTHWALK_BOUNDARY_INSET = 0.01
 # One tile/character length used to position rotated dig-out visuals in their exit direction.
 const DIG_OUT_VISUAL_OFFSET = 16.0
 const DIG_OUT_DOWN_VISUAL_OFFSET = 5.0
+const EXPLOSION_HOLD_DURATION = 0.25
 const DEBUG_DIG_OUT = false
 const DEBUG_EARTHWALK = false
 
@@ -44,6 +45,8 @@ var log_next_default_movement = false
 
 var is_sprinting = false
 
+var is_exploding = false
+
 @export var coyote_time: float = 0.075
 var coyote_timer = 0.0
 
@@ -58,6 +61,13 @@ func _physics_process(delta):
 	# Track if the player did any manual action this frame
 	var player_active = false
 	var direction = 0.0
+
+	if not is_exploding and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
+		_start_explosion()
+
+	if is_exploding:
+		velocity = Vector2.ZERO
+		return
 
 	if is_digging:
 		velocity = Vector2.ZERO
@@ -528,8 +538,19 @@ func _find_nearest_solid(tilemap, origin_cell: Vector2, max_radius: int):
 
 func _is_stopped():
 	return is_digging || is_stopped
+
+
+func _start_explosion():
+	is_exploding = true
+	velocity = Vector2.ZERO
+	animated_sprite_2d.play("explode")
 	
 func _on_animation_finished():
+	if is_exploding and animated_sprite_2d.animation == "explode":
+		await get_tree().create_timer(EXPLOSION_HOLD_DURATION).timeout
+		get_tree().reload_current_scene()
+		return
+
 	if animated_sprite_2d.animation == _get_dig_animation():
 		if is_digging:
 			if is_digging_out:
