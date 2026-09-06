@@ -1,6 +1,6 @@
 extends RichTextLabel
 
-@export_enum("Jump", "Dig", "Dig Out", "Dig Directional") var hint_type: String = "Jump"
+@export_enum("Jump", "Dig", "Dig Out", "Dig Directional", "Sprint") var hint_type: String = "Jump"
 
 func _ready():
 	_update_hint()
@@ -11,8 +11,8 @@ func _process(_delta):
 
 
 func _update_hint():
-	var action = &"jump" if hint_type == "Jump" else &"dig"
-	var action_label = "Jump" if hint_type == "Jump" else "Dig Out" if hint_type == "Dig Out" else "Dig"
+	var action = &"jump" if hint_type == "Jump" else &"sprint" if hint_type == "Sprint" else &"dig"
+	var action_label = "Jump" if hint_type == "Jump" else "Dig Out" if hint_type == "Dig Out" else "Sprint" if hint_type == "Sprint" else "Dig"
 	var buttons: PackedStringArray = []
 	for event in InputMap.action_get_events(action):
 		buttons.append(event.as_text().split("-", false, 1)[0].strip_edges())
