@@ -363,9 +363,7 @@ script = ExtResource("1_g2els")
 texture_filter = 1
 position = Vector2(0, -21)
 sprite_frames = SubResource("SpriteFrames_2dvfe")
-animation = &"explode"
-frame = 10
-frame_progress = 1.0
+animation = &"earthwalk"
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
 }

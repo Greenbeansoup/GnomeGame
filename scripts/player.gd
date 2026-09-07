@@ -373,7 +373,7 @@ func _snap_to_nearest_adjacent_empty_tile() -> bool:
 			var overlap = player_rect.intersection(cell_rect).get_area()
 			for dir in directions:
 				var check_cell = current_cell + dir
-				if tile_map_layer.get_cell_source_id(check_cell) == -1 and overlap > largest_overlap:
+				if _is_tile_empty_for_dig_out(check_cell) and overlap > largest_overlap:
 					if DEBUG_DIG_OUT:
 						print("[DIG_OUT] candidate source=", current_cell, " target=", check_cell, " direction=", dir, " overlap=", overlap)
 					target_empty_cell = check_cell
@@ -482,6 +482,14 @@ func _is_tile_diggable(cell: Vector2i) -> bool:
 func _is_tile_earthwalkable(cell: Vector2i) -> bool:
 	var tile_data = tile_map_layer.get_cell_tile_data(cell)
 	return tile_data != null and tile_data.get_custom_data("can_earthwalk") != false
+
+
+func _is_tile_empty_for_dig_out(cell: Vector2i) -> bool:
+	if tile_map_layer.get_cell_source_id(cell) == -1:
+		return true
+
+	var tile_data = tile_map_layer.get_cell_tile_data(cell)
+	return tile_data != null and tile_data.get_custom_data("empty") == true
 
 
 func _does_player_fit_in_tile(local_player_position: Vector2, target_cell: Vector2i) -> bool:
