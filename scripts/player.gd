@@ -55,6 +55,8 @@ var is_sprinting = false
 var is_exploding = false
 var mushroom_bounce_normal = Vector2.ZERO
 var mushroom_bounce_steer_timer = 0.0
+enum WallSmackState { NONE, SMACK, FALL, STUNNED }
+var wall_smack_state = WallSmackState.NONE
 
 @export var coyote_time: float = 0.075
 var coyote_timer = 0.0
@@ -99,6 +101,8 @@ func _physics_process(delta):
 		var impact_velocity = velocity
 		move_and_slide()
 		_apply_mushroom_bounces(impact_velocity)
+		_check_for_wall_smack(impact_velocity)
+		_update_wall_smack_landing()
 
 	# IDLE TIMER LOGIC
 	if player_active or velocity.x != 0 or not is_on_floor():
@@ -129,6 +133,8 @@ func _process_default_movement(delta):
 		log_next_default_movement = false
 
 	var player_active = false
+	if wall_smack_state != WallSmackState.NONE and Input.get_axis("left", "right") != 0.0:
+		wall_smack_state = WallSmackState.NONE
 	# 1. APPLY GRAVITY
 	if not is_on_floor() and not is_earthwalking:
 		velocity += get_gravity() * delta
@@ -238,6 +244,27 @@ func _apply_mushroom_bounces(impact_velocity: Vector2) -> bool:
 			mushroom_bounce_steer_timer = MUSHROOM_BOUNCE_STEER_DURATION
 			return true
 	return false
+
+
+func _check_for_wall_smack(impact_velocity: Vector2):
+	if wall_smack_state != WallSmackState.NONE or absf(impact_velocity.x) < SPRINT_SPEED:
+		return
+
+	for collision_index in get_slide_collision_count():
+		var collision = get_slide_collision(collision_index)
+		var collision_normal = collision.get_normal()
+		var collider = collision.get_collider()
+		if collider != null and not collider.has_method("bounce") and absf(collision_normal.x) > 0.5 and impact_velocity.dot(collision_normal) < 0.0:
+			wall_smack_state = WallSmackState.SMACK
+			velocity.x = 0.0
+			return
+
+
+func _update_wall_smack_landing():
+	if wall_smack_state == WallSmackState.FALL and is_on_floor():
+		wall_smack_state = WallSmackState.STUNNED
+	elif wall_smack_state == WallSmackState.STUNNED and not is_on_floor():
+		wall_smack_state = WallSmackState.FALL
 
 
 func _apply_air_steering(steering_change: Vector2, delta: float):
@@ -590,6 +617,10 @@ func _on_animation_finished():
 		get_tree().reload_current_scene()
 		return
 
+	if wall_smack_state == WallSmackState.SMACK and animated_sprite_2d.animation == "wallsmack":
+		wall_smack_state = WallSmackState.FALL
+		return
+
 	if animated_sprite_2d.animation == _get_dig_animation():
 		if is_digging:
 			if is_digging_out:
@@ -615,6 +646,16 @@ func _update_animations(direction: float):
 			else:
 				animated_sprite_2d.flip_h = dig_in_direction == Vector2i.LEFT
 				animated_sprite_2d.play(dig_animation)
+		return
+
+	if wall_smack_state != WallSmackState.NONE:
+		var wall_smack_animation = &"wallsmack"
+		if wall_smack_state == WallSmackState.FALL:
+			wall_smack_animation = &"fallafterwallsmack"
+		elif wall_smack_state == WallSmackState.STUNNED:
+			wall_smack_animation = &"stunnedextended"
+		if animated_sprite_2d.animation != wall_smack_animation:
+			animated_sprite_2d.play(wall_smack_animation)
 		return
 
 	if is_earthwalking:
