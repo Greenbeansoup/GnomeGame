@@ -241,15 +241,28 @@ rotation = 0.7853982
 [node name="StaticBody2D2" parent="." unique_id=906791402 instance=ExtResource("4_lbhrr")]
 position = Vector2(225.00003, -784.00006)
 rotation = -0.7853982
+bounce_force = 450.0
 
 [node name="StaticBody2D3" parent="." unique_id=86860966 instance=ExtResource("4_lbhrr")]
 position = Vector2(91, -820.00006)
 rotation = 0.7853982
+bounce_force = 450.0
 
 [node name="StaticBody2D4" parent="." unique_id=444783128 instance=ExtResource("4_lbhrr")]
 position = Vector2(228.99997, -867)
 rotation = -0.7853982
+bounce_force = 450.0
 
 [node name="StaticBody2D5" parent="." unique_id=667410730 instance=ExtResource("4_lbhrr")]
-position = Vector2(90.00003, -900)
+position = Vector2(91.00003, -900)
+rotation = 0.7853982
+bounce_force = 450.0
+
+[node name="StaticBody2D6" parent="." unique_id=1347589868 instance=ExtResource("4_lbhrr")]
+position = Vector2(228.99997, -948.00006)
+rotation = -0.7853982
+bounce_force = 450.0
+
+[node name="StaticBody2D7" parent="." unique_id=287440452 instance=ExtResource("4_lbhrr")]
+position = Vector2(91.00003, -976.0001)
 rotation = 0.7853982

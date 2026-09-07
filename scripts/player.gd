@@ -33,10 +33,11 @@ const IDLE_SIT_TIMEOUT = 12.0
 const IDLE_TIRED_TIMEOUT = 20.0
 const IDLE_SLEEP_TIMEOUT = 30.0
 var idle_timer = 0.0           # Tracks elapsed time since last activity
-var is_deep_idle = false       # Flips to true when the timer expires
-var is_deep_idle_sit = false       # Flips to true when the timer expires
-var is_deep_idle_tired = false       # Flips to true when the timer expires
-var is_deep_idle_sleep = false       # Flips to true when the timer expires
+# Each flips true once idle_timer passes its matching *_TIMEOUT above (progressively deeper idle).
+var is_deep_idle = false
+var is_deep_idle_sit = false
+var is_deep_idle_tired = false
+var is_deep_idle_sleep = false
 
 var is_digging = false
 var is_digging_out = false
@@ -89,15 +90,15 @@ func _physics_process(delta):
 		_update_animations(0.0)
 		return
 
-	# Delegate movement to the appropriate movement system
+	# Delegate movement to the appropriate movement system.
+	# Both movement functions return [player_active: bool, direction: float].
+	var movement_result: Array
 	if movement_mode == MovementMode.EARTHWALK or is_earthwalking:
-		var res = _process_earthwalking_movement(delta)
-		player_active = res[0]
-		direction = res[1]
+		movement_result = _process_earthwalking_movement(delta)
 	else:
-		var res = _process_default_movement(delta)
-		player_active = res[0]
-		direction = res[1]
+		movement_result = _process_default_movement(delta)
+	player_active = movement_result[0]
+	direction = movement_result[1]
 
 	# MOVE THE CHARACTER
 	# Only use physics-based movement when not earthwalking
@@ -153,10 +154,13 @@ func _process_default_movement(delta):
 
 	# 3. HANDLE HORIZONTAL MOVEMENT
 	var direction = Input.get_axis("left", "right")
+	# A mushroom bounce can leave is_on_floor() true on shallow tilts, so grounded input
+	# must still go through steering to avoid overwriting the launch velocity.
+	var grounded = is_on_floor() and mushroom_bounce_steer_timer <= 0.0
 	if direction:
 		is_sprinting = Input.is_action_pressed("sprint")
 		var target_speed = direction * (SPRINT_SPEED if is_sprinting else SPEED)
-		if is_on_floor():
+		if grounded:
 			velocity.x = target_speed
 		else:
 			var horizontal_change = move_toward(velocity.x, target_speed, AIR_ACCELERATION) - velocity.x
@@ -164,9 +168,9 @@ func _process_default_movement(delta):
 		animated_sprite_2d.flip_h = (direction < 0)
 		player_active = true
 	else:
-		var deceleration = SPEED if is_on_floor() else AIR_DECELERATION
+		var deceleration = SPEED if grounded else AIR_DECELERATION
 		var horizontal_change = move_toward(velocity.x, 0, deceleration) - velocity.x
-		if is_on_floor():
+		if grounded:
 			velocity.x += horizontal_change
 		else:
 			_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
@@ -240,10 +244,12 @@ func _process_earthwalking_movement(delta):
 
 
 func _apply_mushroom_bounces(impact_velocity: Vector2) -> bool:
+	# Check every surface touched this frame for a bounce collider (e.g. a mushroom cap).
 	for collision_index in get_slide_collision_count():
 		var collision = get_slide_collision(collision_index)
 		var collider = collision.get_collider()
 		if collider != null and collider.has_method("bounce"):
+			# Debounce: skip re-triggering the same mushroom while still resolving its last bounce.
 			if collider == last_bounced_mushroom and mushroom_bounce_debounce_timer > 0.0:
 				continue
 			mushroom_bounce_normal = collider.bounce(self, impact_velocity)
@@ -262,6 +268,8 @@ func _check_for_wall_smack(impact_velocity: Vector2):
 		var collision = get_slide_collision(collision_index)
 		var collision_normal = collision.get_normal()
 		var collider = collision.get_collider()
+		# A near-vertical wall (|normal.x| > 0.5) hit while moving into it (opposing dot product)
+		# at sprint speed triggers a smack, but never against bounce surfaces like mushrooms.
 		if collider != null and not collider.has_method("bounce") and absf(collision_normal.x) > 0.5 and impact_velocity.dot(collision_normal) < 0.0:
 			wall_smack_state = WallSmackState.SMACK
 			velocity.x = 0.0
@@ -281,6 +289,9 @@ func _apply_air_steering(steering_change: Vector2, delta: float):
 		return
 
 	mushroom_bounce_steer_timer = maxf(mushroom_bounce_steer_timer - delta, 0.0)
+	# Strip out the component of the steering change along the bounce normal (vector
+	# projection: change - normal * (change . normal)) so input can't cancel the launch,
+	# leaving only the perpendicular (tangential) component to steer with.
 	var tangent_change = steering_change - mushroom_bounce_normal * steering_change.dot(mushroom_bounce_normal)
 	velocity += tangent_change
 
@@ -331,12 +342,16 @@ func _select_dig_in_target() -> bool:
 	var target_direction = Vector2i.DOWN
 
 	if held_horizontal_direction != 0.0 and sign(held_horizontal_direction) == facing_direction.x:
+		# Holding into the direction the player is facing digs sideways into that tile;
+		# the offset samples a point just in front of and slightly above the player's feet.
 		var front_position = local_pos + Vector2(facing_direction.x * 8.0, -5.0)
 		target_cell = tile_map_layer.local_to_map(front_position)
 		target_direction = facing_direction
 	else:
 		target_cell = tile_map_layer.local_to_map(local_pos + Vector2.DOWN)
 		if tile_map_layer.get_cell_source_id(target_cell) == -1:
+			# No tile directly below (e.g. straddling an edge): fall back to whichever
+			# painted neighboring cell is closest to the player.
 			var closest_valid_cell = Vector2i.ZERO
 			var shortest_distance = INF
 
@@ -382,12 +397,16 @@ func _snap_into_nearest_tile(map_pos: Vector2i, entry_direction: Vector2i) -> bo
 	var cell_size = Vector2(tile_map_layer.tile_set.tile_size)
 	var cell_min = center_local - cell_size / 2.0
 	var cell_max = center_local + cell_size / 2.0
+	# Offset the cell bounds by the sprite's footprint so clamping keeps the whole
+	# sprite (not just its origin point) within the cell.
 	var player_min = cell_min - EARTHWALK_SPRITE_MIN
 	var player_max = cell_max - EARTHWALK_SPRITE_MAX - Vector2.ONE * EARTHWALK_BOUNDARY_INSET
 	var snapped_local = local_pos.clamp(player_min, player_max)
 	if entry_direction == Vector2i.LEFT or entry_direction == Vector2i.RIGHT:
 		snapped_local = center_local - (EARTHWALK_SPRITE_MIN + EARTHWALK_SPRITE_MAX) / 2.0
 	if entry_direction == Vector2i.DOWN:
+		# Prefer keeping the player's current horizontal position if it still fits,
+		# so entering from above doesn't snap them sideways.
 		var x_preserving_position = Vector2(local_pos.x, snapped_local.y)
 		if _is_world_position_inside_tile(tile_map_layer.to_global(x_preserving_position)):
 			snapped_local = x_preserving_position
@@ -501,39 +520,16 @@ func _set_dig_out_orientation(exit_direction: Vector2i):
 			animated_sprite_2d.position.y += DIG_OUT_DOWN_VISUAL_OFFSET
 		Vector2i.LEFT:
 			animated_sprite_2d.rotation = -PI / 2.0
+			# Rotate the rest position by the opposite angle so the sprite's local offset
+			# still points in the same world-space direction once the node itself is rotated.
 			animated_sprite_2d.position = sprite_rest_position.rotated(PI / 2.0)
 		Vector2i.RIGHT:
 			animated_sprite_2d.rotation = PI / 2.0
 			animated_sprite_2d.position = sprite_rest_position.rotated(-PI / 2.0)
-		
+
 	if exit_direction == Vector2i.LEFT or exit_direction == Vector2i.RIGHT:
-			animated_sprite_2d.position.x += exit_direction.x * DIG_OUT_SIDE_VISUAL_OFFSET
-			animated_sprite_2d.position.y += DIG_OUT_SIDE_VERTICAL_OFFSET
-
-
-func _get_cell_with_most_player_overlap(local_player_position: Vector2) -> Vector2i:
-	var player_rect = Rect2(
-		local_player_position + EARTHWALK_SPRITE_MIN,
-		EARTHWALK_SPRITE_MAX - EARTHWALK_SPRITE_MIN
-	)
-	var cell_size = Vector2(tile_map_layer.tile_set.tile_size)
-	var first_cell = tile_map_layer.local_to_map(player_rect.position)
-	var last_cell = tile_map_layer.local_to_map(player_rect.end - Vector2(0.001, 0.001))
-	var most_overlapping_cell = first_cell
-	var largest_overlap = -1.0
-
-	for cell_x in range(first_cell.x, last_cell.x + 1):
-		for cell_y in range(first_cell.y, last_cell.y + 1):
-			var cell = Vector2i(cell_x, cell_y)
-			var cell_center = tile_map_layer.map_to_local(cell)
-			var cell_rect = Rect2(cell_center - cell_size / 2.0, cell_size)
-			var overlap = player_rect.intersection(cell_rect).get_area()
-
-			if overlap > largest_overlap:
-				largest_overlap = overlap
-				most_overlapping_cell = cell
-
-	return most_overlapping_cell
+		animated_sprite_2d.position.x += exit_direction.x * DIG_OUT_SIDE_VISUAL_OFFSET
+		animated_sprite_2d.position.y += DIG_OUT_SIDE_VERTICAL_OFFSET
 
 
 func _is_tile_diggable(cell: Vector2i) -> bool:
@@ -552,21 +548,6 @@ func _is_tile_empty_for_dig_out(cell: Vector2i) -> bool:
 
 	var tile_data = tile_map_layer.get_cell_tile_data(cell)
 	return tile_data != null and tile_data.get_custom_data("empty") == true
-
-
-func _does_player_fit_in_tile(local_player_position: Vector2, target_cell: Vector2i) -> bool:
-	var corners = [
-		local_player_position + EARTHWALK_SPRITE_MIN,
-		local_player_position + Vector2(EARTHWALK_SPRITE_MAX.x - EARTHWALK_BOUNDARY_INSET, EARTHWALK_SPRITE_MIN.y),
-		local_player_position + Vector2(EARTHWALK_SPRITE_MIN.x, EARTHWALK_SPRITE_MAX.y - EARTHWALK_BOUNDARY_INSET),
-		local_player_position + EARTHWALK_SPRITE_MAX - Vector2.ONE * EARTHWALK_BOUNDARY_INSET,
-	]
-
-	for corner in corners:
-		if tile_map_layer.local_to_map(corner) != target_cell:
-			return false
-
-	return true
 
 
 # Helper that checks whether the full sprite lies inside earthwalkable tiles of the layer.
@@ -589,26 +570,6 @@ func _is_world_position_inside_tile(world_position: Vector2) -> bool:
 
 	return true
 
-
-func _tile_solid(tilemap, cell: Vector2) -> bool:
-	if not tilemap:
-		return false
-	# Prefer common API names; assume -1 means empty
-	if tilemap.has_method("get_cellv"):
-		return tilemap.get_cellv(cell) != -1
-	elif tilemap.has_method("get_cell"):
-		return tilemap.get_cell(cell.x, cell.y) != -1
-	return false
-
-
-func _find_nearest_solid(tilemap, origin_cell: Vector2, max_radius: int):
-	for r in range(0, max_radius + 1):
-		for dx in range(-r, r + 1):
-			for dy in range(-r, r + 1):
-				var c = origin_cell + Vector2(dx, dy)
-				if _tile_solid(tilemap, c):
-					return c
-	return null
 
 func _is_stopped():
 	return is_digging || is_stopped
@@ -645,6 +606,12 @@ func _get_dig_animation() -> StringName:
 	return &"dig"
 
 
+# Plays an animation only if it isn't already the current one, avoiding restart-on-every-frame flicker.
+func _play_if_different(animation_name: StringName):
+	if animated_sprite_2d.animation != animation_name:
+		animated_sprite_2d.play(animation_name)
+
+
 func _update_animations(direction: float):
 	if is_digging:
 		var dig_animation = _get_dig_animation()
@@ -662,13 +629,11 @@ func _update_animations(direction: float):
 			wall_smack_animation = &"fallafterwallsmack"
 		elif wall_smack_state == WallSmackState.STUNNED:
 			wall_smack_animation = &"stunnedextended"
-		if animated_sprite_2d.animation != wall_smack_animation:
-			animated_sprite_2d.play(wall_smack_animation)
+		_play_if_different(wall_smack_animation)
 		return
 
 	if is_earthwalking:
-		if animated_sprite_2d.animation != "earthwalk":
-				animated_sprite_2d.play("earthwalk")
+		_play_if_different(&"earthwalk")
 		if direction != 0:
 			if animated_sprite_2d.animation == "earthwalk" && !animated_sprite_2d.is_playing():
 				animated_sprite_2d.play()
@@ -677,32 +642,19 @@ func _update_animations(direction: float):
 		return
 	elif is_on_floor():
 		if direction != 0:
-			if is_sprinting:
-				if animated_sprite_2d.animation != "sprinting":
-					animated_sprite_2d.play("sprinting")
-			elif animated_sprite_2d.animation != "walking":
-				animated_sprite_2d.play("walking")
+			_play_if_different(&"sprinting" if is_sprinting else &"walking")
 		else:
-			# If the player has been still long enough, play deep idle animation
+			# Deepening idle stages are checked from longest to shortest timeout so the
+			# most "asleep" animation that has been earned wins.
 			if is_deep_idle_sleep:
-				if animated_sprite_2d.animation != "idlesleep":
-					animated_sprite_2d.play("idlesleep")
+				_play_if_different(&"idlesleep")
 			elif is_deep_idle_tired:
-				if animated_sprite_2d.animation != "idletired":
-					animated_sprite_2d.play("idletired")
+				_play_if_different(&"idletired")
 			elif is_deep_idle_sit:
-				if animated_sprite_2d.animation != "idlesit":
-					animated_sprite_2d.play("idlesit")
+				_play_if_different(&"idlesit")
 			elif is_deep_idle:
-				if animated_sprite_2d.animation != "idle":
-					animated_sprite_2d.play("idle")
+				_play_if_different(&"idle")
 			else:
-				if animated_sprite_2d.animation != "default":
-					animated_sprite_2d.play("default")
+				_play_if_different(&"default")
 	else:
-		if velocity.y < 0:
-			if animated_sprite_2d.animation != "jumping":
-				animated_sprite_2d.play("jumping")
-		else:
-			if animated_sprite_2d.animation != "falling":
-				animated_sprite_2d.play("falling")
+		_play_if_different(&"jumping" if velocity.y < 0 else &"falling")
