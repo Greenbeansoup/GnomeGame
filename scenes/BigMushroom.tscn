@@ -77,5 +77,5 @@ metadata/_aseprite_wizard_source_file_hash_ = "f56eb47a63c3b88f8cf1e7a9dec44a0e"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=2041308691]
 z_index = -1
 position = Vector2(1, -20)
-polygon = PackedVector2Array(-14, -1, -11, -4, 9, -4, 12, -1)
+polygon = PackedVector2Array(-13, -3, -14, -4, 12, -4, 11, -3)
 one_way_collision = true

@@ -23,6 +23,7 @@ const DIG_OUT_SIDE_VERTICAL_OFFSET = -5.0
 const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT
 const EXPLOSION_HOLD_DURATION = 0.25
 const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
+const MUSHROOM_BOUNCE_DEBOUNCE_DURATION = 0.08
 const DEBUG_DIG_OUT = false
 const DEBUG_EARTHWALK = false
 
@@ -55,6 +56,8 @@ var is_sprinting = false
 var is_exploding = false
 var mushroom_bounce_normal = Vector2.ZERO
 var mushroom_bounce_steer_timer = 0.0
+var last_bounced_mushroom: Node2D
+var mushroom_bounce_debounce_timer = 0.0
 enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
 
@@ -72,6 +75,7 @@ func _physics_process(delta):
 	# Track if the player did any manual action this frame
 	var player_active = false
 	var direction = 0.0
+	mushroom_bounce_debounce_timer = maxf(mushroom_bounce_debounce_timer - delta, 0.0)
 
 	if not is_exploding and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
 		_start_explosion()
@@ -240,8 +244,12 @@ func _apply_mushroom_bounces(impact_velocity: Vector2) -> bool:
 		var collision = get_slide_collision(collision_index)
 		var collider = collision.get_collider()
 		if collider != null and collider.has_method("bounce"):
+			if collider == last_bounced_mushroom and mushroom_bounce_debounce_timer > 0.0:
+				continue
 			mushroom_bounce_normal = collider.bounce(self, impact_velocity)
 			mushroom_bounce_steer_timer = MUSHROOM_BOUNCE_STEER_DURATION
+			last_bounced_mushroom = collider
+			mushroom_bounce_debounce_timer = MUSHROOM_BOUNCE_DEBOUNCE_DURATION
 			return true
 	return false
 

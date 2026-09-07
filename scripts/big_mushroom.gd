@@ -16,8 +16,8 @@ func _on_animation_finished():
 func bounce(body: CharacterBody2D, impact_velocity: Vector2) -> Vector2:
 	animated_sprite_2d.play("Bounce")
 	
-	# transform.y is local down; its inverse launches away from the mushroom surface.
-	var launch_direction = -global_transform.y
+	# Launch direction follows the mushroom's local top, regardless of contact resolution.
+	var launch_direction = -global_transform.y.normalized()
 	var impact_speed = absf(impact_velocity.dot(-launch_direction))
 
 	# Preserve a minimum bounce while allowing stronger impacts in the same axis to scale it.
