@@ -3,8 +3,8 @@ extends StaticBody2D
 @onready var animated_sprite_2d = $AnimatedSprite2D
 
 # The strength of the launch force
-@export var bounce_force: float = 1.0
-@export_range(0.0, 1.0, 0.01) var force_multiplier: float = 0.2
+@export var bounce_force: float = 600.0
+@export_range(0.0, 1.0, 0.01) var force_multiplier: float = 0.99
 
 func _on_ready():
 	animated_sprite_2d.animation_finished.connect(_on_animation_finished)

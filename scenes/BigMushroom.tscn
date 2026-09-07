@@ -44,6 +44,7 @@ animations = [{
 }]
 
 [node name="StaticBody2D" type="StaticBody2D" unique_id=797032271]
+z_index = -1
 script = ExtResource("1_otqk5")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=544158492]
@@ -74,6 +75,7 @@ metadata/_aseprite_wizard_config_ = {
 metadata/_aseprite_wizard_source_file_hash_ = "f56eb47a63c3b88f8cf1e7a9dec44a0e"
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=2041308691]
+z_index = -1
 position = Vector2(1, -20)
-polygon = PackedVector2Array(-15, -1, -4, -5, 2, -5, 13, -1)
+polygon = PackedVector2Array(-14, -1, -11, -4, 9, -4, 12, -1)
 one_way_collision = true
