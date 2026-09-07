@@ -6,6 +6,8 @@ extends CharacterBody2D
 
 const SPEED = 130.0
 const SPRINT_SPEED = SPEED * 1.5
+const AIR_DECELERATION = SPEED * 0.1
+const AIR_ACCELERATION = SPEED * 0.2
 const JUMP_VELOCITY = -250.0
 # 14x14 earthwalk footprint centered at the sprite's local position of (0, -7).
 const EARTHWALK_SPRITE_MIN = Vector2(-7.0, -14.0)
@@ -20,6 +22,7 @@ const DIG_OUT_SIDE_VERTICAL_OFFSET = -5.0
 # A flipped frame needs to move down its full height to sit beneath the tile.
 const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT
 const EXPLOSION_HOLD_DURATION = 0.25
+const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
 const DEBUG_DIG_OUT = false
 const DEBUG_EARTHWALK = false
 
@@ -50,6 +53,8 @@ var log_next_default_movement = false
 var is_sprinting = false
 
 var is_exploding = false
+var mushroom_bounce_normal = Vector2.ZERO
+var mushroom_bounce_steer_timer = 0.0
 
 @export var coyote_time: float = 0.075
 var coyote_timer = 0.0
@@ -140,11 +145,21 @@ func _process_default_movement(delta):
 	var direction = Input.get_axis("left", "right")
 	if direction:
 		is_sprinting = Input.is_action_pressed("sprint")
-		velocity.x = direction * (SPRINT_SPEED if is_sprinting else SPEED)
+		var target_speed = direction * (SPRINT_SPEED if is_sprinting else SPEED)
+		if is_on_floor():
+			velocity.x = target_speed
+		else:
+			var horizontal_change = move_toward(velocity.x, target_speed, AIR_ACCELERATION) - velocity.x
+			_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
 		animated_sprite_2d.flip_h = (direction < 0)
 		player_active = true
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
+		var deceleration = SPEED if is_on_floor() else AIR_DECELERATION
+		var horizontal_change = move_toward(velocity.x, 0, deceleration) - velocity.x
+		if is_on_floor():
+			velocity.x += horizontal_change
+		else:
+			_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
 
 	# 4. HANDLE DIG
 	if Input.is_action_just_pressed("dig") and is_on_floor() and _select_dig_in_target():
@@ -214,13 +229,25 @@ func _process_earthwalking_movement(delta):
 	return [player_active, movement_direction]
 
 
-func _apply_mushroom_bounces(impact_velocity: Vector2):
+func _apply_mushroom_bounces(impact_velocity: Vector2) -> bool:
 	for collision_index in get_slide_collision_count():
 		var collision = get_slide_collision(collision_index)
 		var collider = collision.get_collider()
 		if collider != null and collider.has_method("bounce"):
-			collider.bounce(self, impact_velocity)
-			return
+			mushroom_bounce_normal = collider.bounce(self, impact_velocity)
+			mushroom_bounce_steer_timer = MUSHROOM_BOUNCE_STEER_DURATION
+			return true
+	return false
+
+
+func _apply_air_steering(steering_change: Vector2, delta: float):
+	if mushroom_bounce_steer_timer <= 0.0:
+		velocity += steering_change
+		return
+
+	mushroom_bounce_steer_timer = maxf(mushroom_bounce_steer_timer - delta, 0.0)
+	var tangent_change = steering_change - mushroom_bounce_normal * steering_change.dot(mushroom_bounce_normal)
+	velocity += tangent_change
 
 
 func _enter_earthwalking():

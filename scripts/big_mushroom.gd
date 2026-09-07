@@ -13,15 +13,15 @@ func _on_animation_finished():
 	if animated_sprite_2d.animation == "Bounce":
 		animated_sprite_2d.play("Default")
 
-func bounce(body: CharacterBody2D, impact_velocity: Vector2) -> void:
+func bounce(body: CharacterBody2D, impact_velocity: Vector2) -> Vector2:
 	animated_sprite_2d.play("Bounce")
 	
 	# transform.y is local down; its inverse launches away from the mushroom surface.
 	var launch_direction = -global_transform.y
-	var impact_speed = maxf(impact_velocity.dot(-launch_direction), 0.0)
-	if impact_speed <= 0.0:
-		return
+	var impact_speed = absf(impact_velocity.dot(-launch_direction))
 
-	# Scale bounce height from the speed moving into the pad, not by adding it.
+	# Preserve a minimum bounce while allowing stronger impacts in the same axis to scale it.
 	var launch_speed = maxf(bounce_force, impact_speed * force_multiplier)
-	body.velocity = launch_direction * launch_speed
+	var tangential_velocity = impact_velocity - launch_direction * impact_velocity.dot(launch_direction)
+	body.velocity = tangential_velocity + launch_direction * launch_speed
+	return launch_direction
