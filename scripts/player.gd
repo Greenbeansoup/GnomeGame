@@ -16,15 +16,20 @@ const EARTHWALK_SPRITE_MAX = Vector2(7.0, 0.0)
 const EARTHWALK_BOUNDARY_INSET = 0.01
 # The exported animation frames use a 64x42 canvas.
 const GNOME_FRAME_HEIGHT = 42.0
-# A rotated frame is 42px wide, so move it fully out on the horizontal axis.
-const DIG_OUT_SIDE_VISUAL_OFFSET = GNOME_FRAME_HEIGHT
-const DIG_OUT_SIDE_VERTICAL_OFFSET = -5.0
-# A flipped frame needs to move down its full height to sit beneath the tile.
-const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT
+# A rotated frame is 42px wide, so move it fully out on the horizontal axis; nudged down
+# a few px from the full frame height so the dig-out reveal lines up with the earth tile.
+const DIG_OUT_SIDE_VISUAL_OFFSET = GNOME_FRAME_HEIGHT - 2.0
+const DIG_OUT_SIDE_VERTICAL_OFFSET = -7.0
+# A flipped frame needs to move down its full height to sit beneath the tile; nudged down
+# a few px from the full frame height so the dig-out reveal lines up with the earth tile.
+const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT - 4.5
+# Extra horizontal correction applied only when exiting downward into a tile that required
+# the physics-shape clamp to nudge the player sideways (see _snap_to_nearest_adjacent_empty_tile).
+const DIG_OUT_DOWN_EXTRA_SIDE_NUDGE = 2.0
 const EXPLOSION_HOLD_DURATION = 0.25
 const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
 const MUSHROOM_BOUNCE_DEBOUNCE_DURATION = 0.08
-const DEBUG_DIG_OUT = false
+const DEBUG_DIG_OUT = true
 const DEBUG_EARTHWALK = false
 
 # --- IDLE TIMER VARIABLES ---
@@ -322,12 +327,16 @@ func _begin_exit_earthwalking() -> bool:
 
 
 func _finish_exit_earthwalking():
+	if DEBUG_DIG_OUT:
+		print("[DIG_OUT] before sprite reset sprite_local=", animated_sprite_2d.position, " sprite_global=", global_position + animated_sprite_2d.position)
 	animated_sprite_2d.flip_v = false
 	animated_sprite_2d.rotation = 0.0
 	animated_sprite_2d.position = sprite_rest_position
 	if collision_shape_2d:
 		collision_shape_2d.disabled = false
 	log_next_default_movement = true
+	if DEBUG_DIG_OUT:
+		print("[DIG_OUT] after sprite reset sprite_local=", animated_sprite_2d.position, " sprite_global=", global_position + animated_sprite_2d.position)
 	_log_dig_out("dig-out animation finished")
 
 
@@ -469,16 +478,24 @@ func _snap_to_nearest_adjacent_empty_tile() -> bool:
 		var center_local = tile_map_layer.map_to_local(target_empty_cell)
 		var cell_min = center_local - cell_size / 2.0
 		var cell_max = center_local + cell_size / 2.0
-		var snapped_local = local_pos.clamp(cell_min, cell_max)
-		if exit_direction == Vector2i.DOWN and collision_shape_2d and collision_shape_2d.shape is CircleShape2D:
-			var collision_radius = (collision_shape_2d.shape as CircleShape2D).radius
-			snapped_local.y = maxf(
-				snapped_local.y,
-				cell_min.y - collision_shape_2d.position.y + collision_radius + EARTHWALK_BOUNDARY_INSET
-			)
+		# Mirrors _snap_into_nearest_tile's containment clamp, but only requires the collision
+		# shape's center (half its extents) to clear the cell bounds rather than its full size,
+		# since the player may start deeply embedded in the solid tile being left behind and a
+		# full-size clamp would shove them further than necessary.
+		var collision_bounds = _get_collision_local_bounds()
+		var half_collision_min = collision_bounds[0] / 2.0
+		var half_collision_max = collision_bounds[1] / 2.0
+		var player_min = cell_min - half_collision_min
+		var player_max = cell_max - half_collision_max - Vector2.ONE * EARTHWALK_BOUNDARY_INSET
+		var snapped_local = local_pos.clamp(player_min, player_max)
+		# The dig-out sprite is drawn slightly off-center, so when exiting downward into a tile
+		# that needed horizontal clamping, nudge a bit further the same way to keep it aligned.
+		if exit_direction == Vector2i.DOWN:
+			var horizontal_nudge_direction = signf(snapped_local.x - local_pos.x)
+			snapped_local.x += horizontal_nudge_direction * DIG_OUT_DOWN_EXTRA_SIDE_NUDGE
 		global_position = tile_map_layer.to_global(snapped_local)
 		if DEBUG_DIG_OUT:
-			print("[DIG_OUT] selected source=", source_cell, " target=", target_empty_cell, " snapped local=", snapped_local, " global=", global_position)
+			print("[DIG_OUT] selected source=", source_cell, " target=", target_empty_cell, " cell_min=", cell_min, " cell_max=", cell_max, " player_min=", player_min, " player_max=", player_max, " snapped local=", snapped_local, " global=", global_position)
 		return true
 
 	if DEBUG_DIG_OUT:
@@ -531,6 +548,9 @@ func _set_dig_out_orientation(exit_direction: Vector2i):
 		animated_sprite_2d.position.x += exit_direction.x * DIG_OUT_SIDE_VISUAL_OFFSET
 		animated_sprite_2d.position.y += DIG_OUT_SIDE_VERTICAL_OFFSET
 
+	if DEBUG_DIG_OUT:
+		print("[DIG_OUT] sprite orientation exit_direction=", exit_direction, " sprite_local=", animated_sprite_2d.position, " sprite_global=", global_position + animated_sprite_2d.position, " flip_v=", animated_sprite_2d.flip_v, " rotation=", animated_sprite_2d.rotation)
+
 
 func _is_tile_diggable(cell: Vector2i) -> bool:
 	var tile_data = tile_map_layer.get_cell_tile_data(cell)
@@ -569,6 +589,22 @@ func _is_world_position_inside_tile(world_position: Vector2) -> bool:
 			return false
 
 	return true
+
+
+# Returns the physics collision shape's local-space [min, max] bounds around its center;
+# used to find the minimal shift needed to clear solid geometry (smaller than the earthwalk box).
+func _get_collision_local_bounds() -> Array:
+	if not collision_shape_2d or not collision_shape_2d.shape:
+		return [Vector2.ZERO, Vector2.ZERO]
+
+	var shape = collision_shape_2d.shape
+	var half_extents = Vector2.ZERO
+	if shape is RectangleShape2D:
+		half_extents = shape.size / 2.0
+	elif shape is CircleShape2D:
+		half_extents = Vector2.ONE * shape.radius
+
+	return [collision_shape_2d.position - half_extents, collision_shape_2d.position + half_extents]
 
 
 func _is_stopped():
