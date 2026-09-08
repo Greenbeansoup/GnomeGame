@@ -29,6 +29,14 @@ const DIG_OUT_DOWN_EXTRA_SIDE_NUDGE = 2.0
 const EXPLOSION_HOLD_DURATION = 0.25
 const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
 const MUSHROOM_BOUNCE_DEBOUNCE_DURATION = 0.08
+# Downward speed applied the instant a ground pound starts.
+const GROUND_POUND_INITIAL_SPEED = 300.0
+# The drillmove animation art is drawn sideways, so rotate it 90 degrees to point down;
+# the sign flips with facing direction (see _get_ground_pound_rotation).
+const GROUND_POUND_ROTATION_MAGNITUDE = PI / 2.0
+# Corrects a residual sideways drift from the rotation offset by shifting the sprite back
+# toward center, away from the facing direction, by half the character's width.
+const GROUND_POUND_INWARD_SHIFT = (EARTHWALK_SPRITE_MAX.x - EARTHWALK_SPRITE_MIN.x) / 2.0
 const DEBUG_DIG_OUT = false
 const DEBUG_EARTHWALK = false
 
@@ -66,6 +74,11 @@ var last_bounced_mushroom: Node2D
 var mushroom_bounce_debounce_timer = 0.0
 enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
+# Distinguishes which impact started the current smack/fall cycle, since both share the
+# same WallSmackState machine and follow-up falling animations.
+enum SmackTrigger { WALL, CEILING }
+var smack_trigger = SmackTrigger.WALL
+var is_ground_pounding = false
 
 @export var coyote_time: float = 0.075
 var coyote_timer = 0.0
@@ -112,6 +125,7 @@ func _physics_process(delta):
 		move_and_slide()
 		_apply_mushroom_bounces(impact_velocity)
 		_check_for_wall_smack(impact_velocity)
+		_check_for_head_smack(impact_velocity)
 		_update_wall_smack_landing()
 
 	# IDLE TIMER LOGIC
@@ -147,9 +161,15 @@ func _process_default_movement(delta):
 		wall_smack_state = WallSmackState.NONE
 	# 1. APPLY GRAVITY
 	if not is_on_floor() and not is_earthwalking:
+		# Ground pound only cancels horizontal momentum and adds an initial downward kick;
+		# gravity still applies normally afterward so the fall keeps accelerating.
 		velocity += get_gravity() * delta
 		coyote_timer += delta
 	else:
+		if is_ground_pounding:
+			is_ground_pounding = false
+			animated_sprite_2d.rotation = 0.0
+			animated_sprite_2d.position = sprite_rest_position
 		coyote_timer = 0.0
 
 	# 2. HANDLE JUMP
@@ -157,28 +177,39 @@ func _process_default_movement(delta):
 		velocity.y = JUMP_VELOCITY
 		player_active = true
 
-	# 3. HANDLE HORIZONTAL MOVEMENT
-	var direction = Input.get_axis("left", "right")
-	# A mushroom bounce can leave is_on_floor() true on shallow tilts, so grounded input
-	# must still go through steering to avoid overwriting the launch velocity.
-	var grounded = is_on_floor() and mushroom_bounce_steer_timer <= 0.0
-	if direction:
-		is_sprinting = Input.is_action_pressed("sprint")
-		var target_speed = direction * (SPRINT_SPEED if is_sprinting else SPEED)
-		if grounded:
-			velocity.x = target_speed
-		else:
-			var horizontal_change = move_toward(velocity.x, target_speed, AIR_ACCELERATION) - velocity.x
-			_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
-		animated_sprite_2d.flip_h = (direction < 0)
+	# 2b. HANDLE GROUND POUND (airborne only, can't be canceled once started)
+	if not is_ground_pounding and not is_on_floor() and Input.is_action_just_pressed("ground_pound"):
+		is_ground_pounding = true
+		velocity.y = maxf(velocity.y, GROUND_POUND_INITIAL_SPEED)
+		velocity.x = 0.0
 		player_active = true
+
+	# 3. HANDLE HORIZONTAL MOVEMENT
+	var direction = 0.0
+	if is_ground_pounding:
+		velocity.x = 0.0
 	else:
-		var deceleration = SPEED if grounded else AIR_DECELERATION
-		var horizontal_change = move_toward(velocity.x, 0, deceleration) - velocity.x
-		if grounded:
-			velocity.x += horizontal_change
+		direction = Input.get_axis("left", "right")
+		# A mushroom bounce can leave is_on_floor() true on shallow tilts, so grounded input
+		# must still go through steering to avoid overwriting the launch velocity.
+		var grounded = is_on_floor() and mushroom_bounce_steer_timer <= 0.0
+		if direction:
+			is_sprinting = Input.is_action_pressed("sprint")
+			var target_speed = direction * (SPRINT_SPEED if is_sprinting else SPEED)
+			if grounded:
+				velocity.x = target_speed
+			else:
+				var horizontal_change = move_toward(velocity.x, target_speed, AIR_ACCELERATION) - velocity.x
+				_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
+			animated_sprite_2d.flip_h = (direction < 0)
+			player_active = true
 		else:
-			_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
+			var deceleration = SPEED if grounded else AIR_DECELERATION
+			var horizontal_change = move_toward(velocity.x, 0, deceleration) - velocity.x
+			if grounded:
+				velocity.x += horizontal_change
+			else:
+				_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
 
 	# 4. HANDLE DIG
 	if Input.is_action_just_pressed("dig") and is_on_floor() and _select_dig_in_target():
@@ -277,7 +308,25 @@ func _check_for_wall_smack(impact_velocity: Vector2):
 		# at sprint speed triggers a smack, but never against bounce surfaces like mushrooms.
 		if collider != null and not collider.has_method("bounce") and absf(collision_normal.x) > 0.5 and impact_velocity.dot(collision_normal) < 0.0:
 			wall_smack_state = WallSmackState.SMACK
+			smack_trigger = SmackTrigger.WALL
 			velocity.x = 0.0
+			return
+
+
+func _check_for_head_smack(impact_velocity: Vector2):
+	if wall_smack_state != WallSmackState.NONE or absf(impact_velocity.y) < SPRINT_SPEED:
+		return
+
+	for collision_index in get_slide_collision_count():
+		var collision = get_slide_collision(collision_index)
+		var collision_normal = collision.get_normal()
+		var collider = collision.get_collider()
+		# A near-horizontal ceiling (normal.y > 0.5) hit while moving up into it (opposing dot
+		# product) at sprint speed triggers a squash, but never against bounce surfaces.
+		if collider != null and not collider.has_method("bounce") and collision_normal.y > 0.5 and impact_velocity.dot(collision_normal) < 0.0:
+			wall_smack_state = WallSmackState.SMACK
+			smack_trigger = SmackTrigger.CEILING
+			velocity.y = 0.0
 			return
 
 
@@ -622,7 +671,7 @@ func _on_animation_finished():
 		get_tree().reload_current_scene()
 		return
 
-	if wall_smack_state == WallSmackState.SMACK and animated_sprite_2d.animation == "wallsmack":
+	if wall_smack_state == WallSmackState.SMACK and animated_sprite_2d.animation == _get_smack_animation():
 		wall_smack_state = WallSmackState.FALL
 		return
 
@@ -640,6 +689,16 @@ func _get_dig_animation() -> StringName:
 	if not is_digging_out and (dig_in_direction == Vector2i.LEFT or dig_in_direction == Vector2i.RIGHT):
 		return &"side_dig"
 	return &"dig"
+
+
+# The drill should point in the direction the player was last facing rather than a fixed side.
+func _get_ground_pound_rotation() -> float:
+	return -GROUND_POUND_ROTATION_MAGNITUDE if animated_sprite_2d.flip_h else GROUND_POUND_ROTATION_MAGNITUDE
+
+
+# The initial impact animation depends on whether a wall or a ceiling was smacked into.
+func _get_smack_animation() -> StringName:
+	return &"headsquash" if smack_trigger == SmackTrigger.CEILING else &"wallsmack"
 
 
 # Plays an animation only if it isn't already the current one, avoiding restart-on-every-frame flicker.
@@ -660,12 +719,24 @@ func _update_animations(direction: float):
 		return
 
 	if wall_smack_state != WallSmackState.NONE:
-		var wall_smack_animation = &"wallsmack"
+		var wall_smack_animation = _get_smack_animation() if wall_smack_state == WallSmackState.SMACK else &"wallsmack"
 		if wall_smack_state == WallSmackState.FALL:
-			wall_smack_animation = &"fallafterwallsmack"
+			# The smack can pop the character upward before gravity takes back over.
+			wall_smack_animation = &"spinningclock" if velocity.y < 0.0 else &"fallafterwallsmack"
 		elif wall_smack_state == WallSmackState.STUNNED:
 			wall_smack_animation = &"stunnedextended"
 		_play_if_different(wall_smack_animation)
+		return
+
+	if is_ground_pounding:
+		# Node2D rotation pivots around its own position, which isn't rotated automatically;
+		# rotate the rest offset itself so the sprite doesn't appear to shift on screen.
+		var ground_pound_rotation = _get_ground_pound_rotation()
+		animated_sprite_2d.rotation = ground_pound_rotation
+		animated_sprite_2d.position = sprite_rest_position.rotated(ground_pound_rotation)
+		var inward_direction = 1.0 if animated_sprite_2d.flip_h else -1.0
+		animated_sprite_2d.position.x += inward_direction * GROUND_POUND_INWARD_SHIFT
+		_play_if_different(&"drillmove")
 		return
 
 	if is_earthwalking:

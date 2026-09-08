@@ -266,3 +266,4 @@ bounce_force = 450.0
 [node name="StaticBody2D7" parent="." unique_id=287440452 instance=ExtResource("4_lbhrr")]
 position = Vector2(91.00003, -976.0001)
 rotation = 0.7853982
+bounce_force = 450.0
