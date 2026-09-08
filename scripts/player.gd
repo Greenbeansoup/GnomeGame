@@ -157,7 +157,8 @@ func _process_default_movement(delta):
 		log_next_default_movement = false
 
 	var player_active = false
-	if wall_smack_state != WallSmackState.NONE and Input.get_axis("left", "right") != 0.0:
+	# Any manual input cancels the wall/head smack cycle early.
+	if wall_smack_state != WallSmackState.NONE and (Input.get_axis("left", "right") != 0.0 or Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("down") or Input.is_action_just_pressed("dig")):
 		wall_smack_state = WallSmackState.NONE
 	# 1. APPLY GRAVITY
 	if not is_on_floor() and not is_earthwalking:
