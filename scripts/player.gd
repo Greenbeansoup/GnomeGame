@@ -4,6 +4,11 @@ extends CharacterBody2D
 @onready var collision_shape_2d = $CollisionShape2D
 @export var tile_map_layer: TileMapLayer
 
+# Abilities gated behind these can be unlocked/locked at runtime (e.g. via pickups).
+@export var sprint_unlocked: bool = true
+@export var earthwalk_unlocked: bool = true
+@export var ground_pound_unlocked: bool = true
+
 const SPEED = 130.0
 const SPRINT_SPEED = SPEED * 1.5
 const AIR_DECELERATION = SPEED * 0.1
@@ -179,7 +184,7 @@ func _process_default_movement(delta):
 		player_active = true
 
 	# 2b. HANDLE GROUND POUND (airborne only, can't be canceled once started)
-	if not is_ground_pounding and not is_on_floor() and Input.is_action_just_pressed("ground_pound"):
+	if ground_pound_unlocked and not is_ground_pounding and not is_on_floor() and Input.is_action_just_pressed("ground_pound"):
 		is_ground_pounding = true
 		velocity.y = maxf(velocity.y, GROUND_POUND_INITIAL_SPEED)
 		velocity.x = 0.0
@@ -195,7 +200,7 @@ func _process_default_movement(delta):
 		# must still go through steering to avoid overwriting the launch velocity.
 		var grounded = is_on_floor() and mushroom_bounce_steer_timer <= 0.0
 		if direction:
-			is_sprinting = Input.is_action_pressed("sprint")
+			is_sprinting = sprint_unlocked and Input.is_action_pressed("sprint")
 			var target_speed = direction * (SPRINT_SPEED if is_sprinting else SPEED)
 			if grounded:
 				velocity.x = target_speed
@@ -213,7 +218,7 @@ func _process_default_movement(delta):
 				_apply_air_steering(Vector2(horizontal_change, 0.0), delta)
 
 	# 4. HANDLE DIG
-	if Input.is_action_just_pressed("dig") and is_on_floor() and _select_dig_in_target():
+	if earthwalk_unlocked and Input.is_action_just_pressed("dig") and is_on_floor() and _select_dig_in_target():
 		is_digging = true
 
 	return [player_active, direction]
