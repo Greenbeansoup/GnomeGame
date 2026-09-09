@@ -2,13 +2,17 @@ name: "Build Windows Executable"
 on:
   push:
     branches:
-      - main  # Triggers the build whenever you push to the main branch
+      - main  # Triggers an artifact-only build whenever you push to main
+    tags:
+      - "v*"  # Push a tag like v0.1.0 to also publish a GitHub Release
 
 jobs:
   build-windows:
     name: Export Windows Build
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write # required to create/update a release
+
     steps:
       # Step 1: Download your project files
       - name: Checkout Source Code
@@ -33,9 +37,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 3: Make the build downloadable from the Actions run
+      # Step 3: Make the build downloadable from the Actions run (every push)
+      # Uses the unarchived build_directory since upload-artifact zips it itself,
+      # avoiding a zip-in-a-zip that archive_directory would produce.
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: ${{ steps.export.outputs.archive_directory }}
+          path: ${{ steps.export.outputs.build_directory }}
+
+      # Step 4: Attach the build to a GitHub Release (only when a tag is pushed)
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
+          tag: ${{ github.ref_name }}
+          artifacts: ${{ steps.export.outputs.archive_directory }}/*
