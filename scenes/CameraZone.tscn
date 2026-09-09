@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://cmksib8t1golr"]
+
+[ext_resource type="Script" uid="uid://bdduwhxko6v0n" path="res://scripts/camera_zone.gd" id="1_tqut6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yf5fn"]
+size = Vector2(576, 320)
+
+[node name="CameraZone" type="Area2D" unique_id=644106822 groups=["camera_zones"]]
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("1_tqut6")
+mode = null
+zone_size = null
+metadata/room_width = 576.0
+metadata/room_height = 324.0
+
+[node name="CameraPos" type="Marker2D" parent="." unique_id=1891256766]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1070671831]
+z_index = -2
+shape = SubResource("RectangleShape2D_yf5fn")

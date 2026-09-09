@@ -81,7 +81,7 @@ enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
 # Distinguishes which impact started the current smack/fall cycle, since both share the
 # same WallSmackState machine and follow-up falling animations.
-enum SmackTrigger { WALL, CEILING }
+enum SmackTrigger { WALL, WALL_FORWARD, CEILING }
 var smack_trigger = SmackTrigger.WALL
 var is_ground_pounding = false
 
@@ -314,7 +314,10 @@ func _check_for_wall_smack(impact_velocity: Vector2):
 		# at sprint speed triggers a smack, but never against bounce surfaces like mushrooms.
 		if collider != null and not collider.has_method("bounce") and absf(collision_normal.x) > 0.5 and impact_velocity.dot(collision_normal) < 0.0:
 			wall_smack_state = WallSmackState.SMACK
-			smack_trigger = SmackTrigger.WALL
+			# A collision normal on the same side as the facing direction means the wall was
+			# hit with the gnome's back (facing away from it), rather than head-on.
+			var facing_direction_x = -1.0 if animated_sprite_2d.flip_h else 1.0
+			smack_trigger = SmackTrigger.WALL_FORWARD if sign(collision_normal.x) == sign(facing_direction_x) else SmackTrigger.WALL
 			velocity.x = 0.0
 			return
 
@@ -704,7 +707,9 @@ func _get_ground_pound_rotation() -> float:
 
 # The initial impact animation depends on whether a wall or a ceiling was smacked into.
 func _get_smack_animation() -> StringName:
-	return &"headsquash" if smack_trigger == SmackTrigger.CEILING else &"wallsmack"
+	if smack_trigger == SmackTrigger.CEILING:
+		return &"headsquash"
+	return &"wallsmackforward" if smack_trigger == SmackTrigger.WALL_FORWARD else &"wallsmack"
 
 
 # Plays an animation only if it isn't already the current one, avoiding restart-on-every-frame flicker.
@@ -728,9 +733,14 @@ func _update_animations(direction: float):
 		var wall_smack_animation = _get_smack_animation() if wall_smack_state == WallSmackState.SMACK else &"wallsmack"
 		if wall_smack_state == WallSmackState.FALL:
 			# The smack can pop the character upward before gravity takes back over.
-			wall_smack_animation = &"spinningclock" if velocity.y < 0.0 else &"fallafterwallsmack"
+			if velocity.y < 0.0:
+				wall_smack_animation = &"spinningclock"
+			elif smack_trigger == SmackTrigger.WALL_FORWARD:
+				wall_smack_animation = &"fallafterwallsmackforward"
+			else:
+				wall_smack_animation = &"fallafterwallsmack"
 		elif wall_smack_state == WallSmackState.STUNNED:
-			wall_smack_animation = &"stunnedextended"
+			wall_smack_animation = &"stunnedfacedownextended" if smack_trigger == SmackTrigger.WALL_FORWARD else &"stunnedextended"
 		_play_if_different(wall_smack_animation)
 		return
 

@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://fu3t5p1npql1"]
+
+[sub_resource type="Gradient" id="Gradient_a5avg"]
+offsets = PackedFloat32Array(0, 0.19507186, 0.7186858)
+colors = PackedColorArray(1, 1, 1, 1, 0.5028571, 0.5028571, 0.5028571, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_g4v7s"]
+gradient = SubResource("Gradient_a5avg")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[node name="BigMushroomLight" type="PointLight2D" unique_id=553548155]
+color = Color(0.8112179, 0.29224926, 0.3261453, 1)
+energy = 0.77
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_g4v7s")

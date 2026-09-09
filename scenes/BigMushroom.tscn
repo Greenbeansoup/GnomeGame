@@ -43,6 +43,24 @@ animations = [{
 "speed": 10.0
 }]
 
+[sub_resource type="Gradient" id="Gradient_a5avg"]
+offsets = PackedFloat32Array(0, 0.19507186, 0.7186858)
+colors = PackedColorArray(1, 1, 1, 1, 0.5028571, 0.5028571, 0.5028571, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_g4v7s"]
+gradient = SubResource("Gradient_a5avg")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="Gradient" id="Gradient_p8jeb"]
+offsets = PackedFloat32Array(0, 0.76386034)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_otqk5"]
+gradient = SubResource("Gradient_p8jeb")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
 [node name="StaticBody2D" type="StaticBody2D" unique_id=797032271]
 z_index = -1
 script = ExtResource("1_otqk5")
@@ -52,6 +70,7 @@ texture_filter = 1
 position = Vector2(0, -17)
 sprite_frames = SubResource("SpriteFrames_vjsxa")
 animation = &"Default"
+autoplay = "Default"
 metadata/_aseprite_wizard_interface_config_ = {
 "animation_section": true,
 "layer_section": true,
@@ -79,3 +98,17 @@ z_index = -1
 position = Vector2(1, -19)
 polygon = PackedVector2Array(-15, -1, -13, -4, 11, -4, 13, -1)
 one_way_collision = true
+
+[node name="BigMushroomLight" type="PointLight2D" parent="." unique_id=553548155]
+position = Vector2(0, -21)
+color = Color(0.8112179, 0.29224926, 0.3261453, 1)
+energy = 0.77
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_g4v7s")
+
+[node name="BounceLight" type="PointLight2D" parent="." unique_id=1539671116]
+position = Vector2(0, -21)
+enabled = false
+color = Color(0.9458342, 0.94244564, 0, 1)
+energy = 0.6
+texture = SubResource("GradientTexture2D_otqk5")
