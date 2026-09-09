@@ -1,0 +1,59 @@
+[gd_scene format=4 uid="uid://b03448nirv1po"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5xdlu"]
+height = 54.0
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_5xdlu"]
+_data = PackedByteArray("AAADAAUAAAABAAAAAAEAAIAAAAAsAgAAUklGRiQCAABXRUJQVlA4TBcCAAAv/8AfEGegKJIUh8IIhW+EoIQn7+zggg0ztW28+Xf4GSQQSB3JhDAKYFQjSVJyB4T8/2eauzvx/AcAAPiPWSLT5qOoG2zj/BdrcQoUnJQEOM62N1JcbMDkER0VLbdIJnU5ddxiRR9LV0g/uYYThCtwKvsfj7Sv/6Ukov8O3EZSpPTMMUQ5fIMzP//+898Z4o0TBV+49loQMd4t0fI32s1dp3BqC98NJCnHvSDeZrcoevZC8Hw3FknY7CY8tHcssGuz24oUuLfZLUpxKuhWwcbFJ+4W6YDfqPSqwla3ywdJU1E3COvdXCeuAuA3rnd8N2pioVoF3dgT3vHdSP56bxGxfTYKvvC7SWI0yuK4twePRyNUvOSNZtNHfDcej3fjEYvdYgce957ESAGfxVlvptv7R5pHGM/y/ZPmU+OyONotvwUqgPXmiQaJHbgE3w1mAniLGCdWgEBclfCwN44kZs1165gn+fpFEBEpdOOx221Pv26zhgn6XwPprbsx+MzWSY/DJy6O+0S4FrnYXkgzfrq8eyzeraWFemdtDP2VrRbm3e4Gs791HHqWu+U57tntJor9AHoz3d4/0iw3brFpGm3CoL2Zbs5l5SV1uxY9olvZuwL6fDeaNZ4+zjHezT7HBPpuLUIP866AwrLdTX97W+q22GSaIvv97E56r4UQ1o57Y6PJLCpKs38S3Ji9u7ud9BxC+QTCBBsHAA==")
+size_override = Vector2(256, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wjbkg"]
+atlas = SubResource("PortableCompressedTexture2D_5xdlu")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i3umu"]
+atlas = SubResource("PortableCompressedTexture2D_5xdlu")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bnoks"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wjbkg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i3umu")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 1.0
+}]
+
+[node name="Node2D" type="CharacterBody2D" unique_id=1888432503]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2092680180]
+position = Vector2(0, -27)
+shape = SubResource("CapsuleShape2D_5xdlu")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1981843114]
+texture_filter = 1
+position = Vector2(0, -63)
+sprite_frames = SubResource("SpriteFrames_bnoks")
+frame_progress = 0.9511927
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"embed_tex": true,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"scale": "1.0",
+"should_round_fps": true,
+"slice": "",
+"source": "res://assets/sprites/Sprinter Boss.aseprite",
+"source_uid": 8974190628744067102
+}
+metadata/_aseprite_wizard_source_file_hash_ = "c4f49f9ef623b62b3d5400e998c5e2b1"
