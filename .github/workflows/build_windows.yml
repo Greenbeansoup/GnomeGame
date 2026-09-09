@@ -18,14 +18,24 @@ jobs:
 
       # Step 2: Download Godot 4.7 and match export templates
       - name: Godot Windows Export
+        id: export
         uses: firebelley/godot-export@v8.0.0
         with:
-          # Downloads the headless Linux engine to run the compilation
-          godot_executable_download_url: https://github.com
-          godot_export_templates_download_url: https://github.com
+          # The Linux engine build to run the export (Godot 4.7 no longer ships
+          # a separate "headless" build, this one runs headless via CLI flags)
+          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_linux.x86_64.zip
+          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.7-stable/Godot_v4.7-stable_export_templates.tpz
           relative_project_path: ./
           # Match this exactly to the preset name in your Godot Editor
-          export_preset_name: "Windows Desktop" 
+          export_preset_name: "Windows Desktop"
           archive_output: true
+          cache: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 3: Make the build downloadable from the Actions run
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: ${{ steps.export.outputs.archive_directory }}
