@@ -23,7 +23,7 @@ position = Vector2(-524, -96)
 color = Color(0.72759295, 0.5936862, 0.73051393, 1)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=794331030]
-position = Vector2(-524, -103)
+position = Vector2(-1101, -95)
 zoom = Vector2(2, 2)
 position_smoothing_enabled = true
 position_smoothing_speed = 12.0
