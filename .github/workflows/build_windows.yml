@@ -18,7 +18,7 @@ jobs:
 
       # Step 2: Download Godot 4.7 and match export templates
       - name: Godot Windows Export
-        uses: firebelley/godot-export@v5
+        uses: firebelley/godot-export@v8.0.0
         with:
           # Downloads the headless Linux engine to run the compilation
           godot_executable_download_url: https://github.com
