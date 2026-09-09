@@ -1,5 +1,7 @@
 [gd_scene format=4 uid="uid://b03448nirv1po"]
 
+[ext_resource type="Script" uid="uid://c4q3vrally4bv" path="res://scripts/sprinter_boss.gd" id="1_wjbkg"]
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5xdlu"]
 height = 54.0
 
@@ -25,11 +27,12 @@ animations = [{
 "texture": SubResource("AtlasTexture_i3umu")
 }],
 "loop": 1,
-"name": &"default",
-"speed": 1.0
+"name": &"idle",
+"speed": 10.0
 }]
 
-[node name="Node2D" type="CharacterBody2D" unique_id=1888432503]
+[node name="SprinterRat" type="CharacterBody2D" unique_id=1888432503]
+script = ExtResource("1_wjbkg")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2092680180]
 position = Vector2(0, -27)
@@ -39,7 +42,7 @@ shape = SubResource("CapsuleShape2D_5xdlu")
 texture_filter = 1
 position = Vector2(0, -63)
 sprite_frames = SubResource("SpriteFrames_bnoks")
-frame_progress = 0.9511927
+animation = &"idle"
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
 }
@@ -56,4 +59,4 @@ metadata/_aseprite_wizard_config_ = {
 "source": "res://assets/sprites/Sprinter Boss.aseprite",
 "source_uid": 8974190628744067102
 }
-metadata/_aseprite_wizard_source_file_hash_ = "c4f49f9ef623b62b3d5400e998c5e2b1"
+metadata/_aseprite_wizard_source_file_hash_ = "7f763bef19b0cf6211061cf9b8b74f9a"
