@@ -1,0 +1,31 @@
+name: "Build Windows Executable"
+on:
+  push:
+    branches:
+      - main  # Triggers the build whenever you push to the main branch
+
+jobs:
+  build-windows:
+    name: Export Windows Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Download your project files
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          lfs: true # Ensures large art assets load correctly if using Git LFS
+
+      # Step 2: Download Godot 4.7 and match export templates
+      - name: Godot Windows Export
+        uses: firebelley/godot-export@v5
+        with:
+          # Downloads the headless Linux engine to run the compilation
+          godot_executable_download_url: https://github.com
+          godot_export_templates_download_url: https://github.com
+          relative_project_path: ./
+          # Match this exactly to the preset name in your Godot Editor
+          export_preset_name: "Windows Desktop" 
+          archive_output: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
