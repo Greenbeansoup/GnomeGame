@@ -64,7 +64,7 @@ metadata/_aseprite_wizard_source_file_hash_ = "62d02773911249d65968f65ca92437b2"
 
 [node name="Player" parent="." unique_id=2073979239 node_paths=PackedStringArray("tile_map_layer") instance=ExtResource("1_uwrxv")]
 z_index = 5
-position = Vector2(227, -1058)
+position = Vector2(-1301, -70)
 tile_map_layer = NodePath("../TileMapLayer")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=645543441]

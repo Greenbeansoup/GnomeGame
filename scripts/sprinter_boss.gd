@@ -22,7 +22,7 @@ var facing_direction := -1.0
 # false the instant a non-looping animation completes.
 var spotted_animation_finished := false
 
-const DEBUG_AI := true
+const DEBUG_AI := false
 
 func log_ai(msg: String) -> void:
 	if DEBUG_AI:
