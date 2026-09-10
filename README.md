@@ -25,3 +25,5 @@ The project also enables Aseprite Wizard bake files. When an artist with Aseprit
 ### Beehave
 
 Beehave is vendored during GitHub Actions exports from `bitbrain/beehave` tag `v2.9.3`. For local development, install Beehave into `addons/beehave` yourself if you need to edit or run behavior-tree scenes locally. The folder is ignored so local installs do not get committed accidentally.
+
+The Beehave autoloads in `project.godot` intentionally use `res://addons/beehave/...` paths instead of `uid://...` references. Local Beehave installs can generate different `.uid` files on different machines, so do not commit `project.godot` changes that only rewrite those Beehave autoloads back to `uid://` values.
