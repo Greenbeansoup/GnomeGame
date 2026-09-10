@@ -12,7 +12,6 @@
 [ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="8_gee14"]
 [ext_resource type="FontFile" uid="uid://b1gbvxr5lgyi1" path="res://assets/fonts/PixelOperator8.ttf" id="9_0tnpc"]
 [ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="9_kill_floor"]
-[ext_resource type="PackedScene" uid="uid://cb5h7nvecv34m" path="res://scenes/arm_boss.tscn" id="10_vtaks"]
 [ext_resource type="PackedScene" uid="uid://b03448nirv1po" path="res://scenes/sprinter_boss.tscn" id="14_trtic"]
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_g4v7s"]
@@ -65,7 +64,7 @@ metadata/_aseprite_wizard_source_file_hash_ = "62d02773911249d65968f65ca92437b2"
 
 [node name="Player" parent="." unique_id=2073979239 node_paths=PackedStringArray("tile_map_layer") instance=ExtResource("1_uwrxv")]
 z_index = 5
-position = Vector2(-1303, -65)
+position = Vector2(227, -1058)
 tile_map_layer = NodePath("../TileMapLayer")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=645543441]
@@ -221,14 +220,11 @@ mode = 1
 zone_size = Vector2(864, 320)
 grid_coords = Vector2i(0, -4)
 
-[node name="ArmBoss" parent="." unique_id=1735214254 instance=ExtResource("10_vtaks")]
-position = Vector2(521, -1032)
-
 [node name="CameraZone4" parent="." unique_id=1796895084 instance=ExtResource("8_gee14")]
 position = Vector2(-1100, -95)
 mode = 0
 zone_size = Vector2(576, 320)
 grid_coords = Vector2i(-2, -1)
 
-[node name="Node2D" parent="." unique_id=1888432503 instance=ExtResource("14_trtic")]
-position = Vector2(439, -1040)
+[node name="SprinterRat" parent="." unique_id=1888432503 instance=ExtResource("14_trtic")]
+position = Vector2(579, -1042)

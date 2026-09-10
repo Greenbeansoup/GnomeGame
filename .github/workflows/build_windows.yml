@@ -19,9 +19,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true # Ensures large art assets load correctly if using Git LFS
-          submodules: true # Pulls in addons tracked as git submodules (e.g. beehave)
 
-      # Step 2: Download Godot 4.7 and match export templates
+      # Step 2: The beehave addon is gitignored locally (its upstream repo nests the
+      # actual plugin a level deeper than a plain submodule checkout would expect), so
+      # fetch it fresh here and copy just the addon subfolder into place.
+      - name: Fetch beehave addon
+        run: |
+          git clone --depth 1 --branch v2.9.3 https://github.com/bitbrain/beehave.git /tmp/beehave
+          mkdir -p addons/beehave
+          cp -r /tmp/beehave/addons/beehave/. addons/beehave/
+
+      # Step 3: Download Godot 4.7 and match export templates
       - name: Godot Windows Export
         id: export
         uses: firebelley/godot-export@v8.0.0
@@ -38,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 3: Make the build downloadable from the Actions run (every push)
+      # Step 4: Make the build downloadable from the Actions run (every push)
       # Uses the unarchived build_directory since upload-artifact zips it itself,
       # avoiding a zip-in-a-zip that archive_directory would produce.
       - name: Upload Build Artifact
@@ -47,7 +55,7 @@ jobs:
           name: windows-build
           path: ${{ steps.export.outputs.build_directory }}
 
-      # Step 4: Attach the build to a GitHub Release (only when a tag is pushed)
+      # Step 5: Attach the build to a GitHub Release (only when a tag is pushed)
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: ncipollo/release-action@v1

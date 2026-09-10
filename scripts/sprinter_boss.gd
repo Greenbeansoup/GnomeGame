@@ -2,15 +2,17 @@ extends CharacterBody2D
 @onready var animated_sprite_2d = $AnimatedSprite2D
 @onready var beehave_tree = $BeehaveTree
 @onready var detect_area = $DetectArea
+@onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 
 var forget_timer: Timer
 
 const SPEED = 100.0
 const JUMP_VELOCITY = -400.0
 const CHASE_SPEED = 195.0
-# Player must be this far past the current facing direction before the rat flips around,
-# preventing rapid flip-flopping when they're directly overhead.
+# Extra space beyond the boss body where it stops instead of changing direction.
 const FACING_FLIP_BUFFER = 8.0
+# Extra detection distance behind the boss body, rather than behind its center.
+const DETECTION_REAR_BUFFER = 16.0
 # How close the player must be (in pixels) to escalate from detecting to attack pursuit.
 const ATTACK_RANGE = 200.0
 
@@ -47,9 +49,47 @@ func _physics_process(delta):
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
+	_refresh_player_detection()
 	_update_attack_range()
 
 	move_and_slide()
+
+func _refresh_player_detection() -> void:
+	var player := _get_overlapping_player()
+	if is_instance_valid(player) and _is_player_in_detection_view(player):
+		_set_detected_player(player)
+	elif not beehave_tree.blackboard.get_value("is_player_in_attack_area", false):
+		_clear_detected_player()
+
+func _get_overlapping_player() -> Node2D:
+	for body in detect_area.get_overlapping_bodies():
+		if body is Node2D and body.is_in_group("player"):
+			return body
+	return null
+
+func _is_player_in_detection_view(player: Node2D) -> bool:
+	var horizontal_offset := player.global_position.x - global_position.x
+	return horizontal_offset * facing_direction >= -(_get_body_half_width() + DETECTION_REAR_BUFFER)
+
+func _get_body_half_width() -> float:
+	return body_collision_shape.shape.get_rect().size.x * 0.5
+
+func _set_detected_player(player: Node2D) -> void:
+	var was_detected = beehave_tree.blackboard.get_value("is_player_in_detect_area", false)
+	beehave_tree.blackboard.set_value("is_player_in_detect_area", true)
+	beehave_tree.blackboard.set_value("player", player)
+	if not was_detected:
+		log_ai("DETECT ENTER player=%s" % player.name)
+
+func _clear_detected_player() -> void:
+	if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
+		return
+
+	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
+	beehave_tree.blackboard.set_value("player", null)
+	velocity.x = 0
+	play_idle_animation()
+	log_ai("DETECT CLEARED (player outside facing view)")
 
 func _update_attack_range() -> void:
 	# Attack pursuit is now a distance check against the single DetectArea's tracked
@@ -79,12 +119,8 @@ func _update_attack_range() -> void:
 		forget_timer.start()
 
 func _on_player_entered_detect_area(body: Node2D) -> void:
-	if body.is_in_group("player"):
-		
-		# Tell the behavior tree the player is here
-		beehave_tree.blackboard.set_value("is_player_in_detect_area", true)
-		beehave_tree.blackboard.set_value("player", body)
-		log_ai("DETECT ENTER player=%s" % body.name)
+	if body.is_in_group("player") and _is_player_in_detection_view(body):
+		_set_detected_player(body)
 
 func _on_player_exited_detect_area(body: Node2D) -> void:
 	if not body.is_in_group("player"):
@@ -98,10 +134,7 @@ func _on_player_exited_detect_area(body: Node2D) -> void:
 		log_ai("DETECT EXIT player=%s but chase active, deferring to grace timer" % body.name)
 		return
 
-	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
-	beehave_tree.blackboard.set_value("player", null)
-	velocity.x = 0
-	play_idle_animation()
+	_clear_detected_player()
 	log_ai("DETECT EXIT player=%s (player cleared)" % body.name)
 
 func _on_forget_timer_timeout() -> void:
@@ -153,15 +186,12 @@ func chase_player(player: Node2D) -> void:
 		return
 
 	var dx := player.global_position.x - global_position.x
-	if absf(dx) > FACING_FLIP_BUFFER:
+	var underfoot_buffer := _get_body_half_width() + FACING_FLIP_BUFFER
+	if dx * facing_direction < -underfoot_buffer:
 		facing_direction = signf(dx)
 
-	# Standing still while the player is within the buffer avoids jittering back and
-	# forth across their position, which would also cause repeated facing flips.
-	velocity.x = 0.0 if absf(dx) <= FACING_FLIP_BUFFER else facing_direction * CHASE_SPEED
+	velocity.x = 0.0 if absf(dx) <= underfoot_buffer else facing_direction * CHASE_SPEED
 	_apply_facing(facing_direction)
 
 func _apply_facing(direction: float) -> void:
-	# DetectArea's shape is centered (x=0) on the rat, so flipping the whole body's
-	# scale doesn't shift it and can't trigger the spurious-exit bug from before.
-	scale.x = -1.0 if direction > 0 else 1.0
+	animated_sprite_2d.flip_h = direction > 0

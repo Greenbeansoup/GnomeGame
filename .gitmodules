@@ -1,3 +1,0 @@
-[submodule "addons/beehave"]
-	path = addons/beehave
-	url = https://github.com/bitbrain/beehave.git
