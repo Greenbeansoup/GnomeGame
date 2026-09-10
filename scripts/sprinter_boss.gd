@@ -14,7 +14,7 @@ const FACING_FLIP_BUFFER = 8.0
 # Extra detection distance behind the boss body, rather than behind its center.
 const DETECTION_REAR_BUFFER = 16.0
 # How close the player must be (in pixels) to escalate from detecting to attack pursuit.
-const ATTACK_RANGE = 200.0
+const ATTACK_RANGE = 150.0
 
 # Facing left (unflipped) by default; positive means facing right.
 var facing_direction := -1.0
@@ -30,6 +30,7 @@ func log_ai(msg: String) -> void:
 
 func _ready():
 	animated_sprite_2d.sprite_frames.set_animation_speed("idle", 1)
+	animated_sprite_2d.sprite_frames.set_animation_speed("detecting", 5.0)
 	play_idle_animation()
 	animated_sprite_2d.animation_finished.connect(_on_animated_sprite_animation_finished)
 	

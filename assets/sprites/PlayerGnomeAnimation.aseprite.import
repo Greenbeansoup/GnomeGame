@@ -3,11 +3,12 @@
 importer="aseprite_wizard.plugin.spriteframes"
 type="SpriteFrames"
 uid="uid://8e47eban4jbq"
-valid=false
+path="res://.godot/imported/PlayerGnomeAnimation.aseprite-82e44212f2f7e9ad769a5a31fbc3a5c8.res"
 
 [deps]
 
 source_file="res://assets/sprites/PlayerGnomeAnimation.aseprite"
+dest_files=["res://.godot/imported/PlayerGnomeAnimation.aseprite-82e44212f2f7e9ad769a5a31fbc3a5c8.res"]
 
 [params]
 

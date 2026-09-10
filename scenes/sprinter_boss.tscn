@@ -92,7 +92,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
-size = Vector2(586, 85.5)
+size = Vector2(478, 85.5)
 
 [node name="SprinterRat" type="CharacterBody2D" unique_id=1888432503]
 script = ExtResource("1_wjbkg")
@@ -124,10 +124,10 @@ metadata/_aseprite_wizard_config_ = {
 }
 metadata/_aseprite_wizard_source_file_hash_ = "6e1e44497b9b971a33db5f656a00d157"
 
-[node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("actor")]
+[node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("blackboard", "actor")]
 script = ExtResource("2_i3umu")
 actor_node_path = NodePath("..")
-blackboard = null
+blackboard = NodePath("@Node@29576")
 actor = NodePath("..")
 
 [node name="SelectorReactiveComposite" type="Node" parent="BeehaveTree" unique_id=2141388327]
