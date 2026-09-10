@@ -35,6 +35,12 @@ theme_override_fonts/font = ExtResource("1_0ykhv")
 text = "Start"
 flat = true
 
+[node name="StartTestArena" type="Button" parent="VBoxContainer" unique_id=1596448525]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_0ykhv")
+text = "Start Test Arena"
+flat = true
+
 [node name="Exit" type="Button" parent="VBoxContainer" unique_id=698920222]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_0ykhv")
