@@ -1,7 +1,7 @@
 extends CharacterBody2D
 @onready var animated_sprite_2d = $AnimatedSprite2D
 @onready var beehave_tree = $BeehaveTree
-@onready var attack_area: Area2D = $AttackArea
+@onready var detect_area = $DetectArea
 
 var forget_timer: Timer
 
@@ -11,16 +11,28 @@ const CHASE_SPEED = 195.0
 # Player must be this far past the current facing direction before the rat flips around,
 # preventing rapid flip-flopping when they're directly overhead.
 const FACING_FLIP_BUFFER = 8.0
+# How close the player must be (in pixels) to escalate from detecting to attack pursuit.
+const ATTACK_RANGE = 200.0
 
 # Facing left (unflipped) by default; positive means facing right.
 var facing_direction := -1.0
+# Tracked explicitly instead of via is_playing(), since that can't be relied on to flip
+# false the instant a non-looping animation completes.
+var spotted_animation_finished := false
+
+const DEBUG_AI := true
+
+func log_ai(msg: String) -> void:
+	if DEBUG_AI:
+		print("[AI %s] %s" % [name, msg])
 
 func _ready():
 	animated_sprite_2d.sprite_frames.set_animation_speed("idle", 1)
-	animated_sprite_2d.play("idle")
+	play_idle_animation()
+	animated_sprite_2d.animation_finished.connect(_on_animated_sprite_animation_finished)
 	
-	attack_area.body_entered.connect(_on_player_entered)
-	attack_area.body_exited.connect(_on_player_exited)
+	detect_area.body_entered.connect(_on_player_entered_detect_area)
+	detect_area.body_exited.connect(_on_player_exited_detect_area)
 	
 	forget_timer = Timer.new()
 	forget_timer.wait_time = 5.0
@@ -35,38 +47,106 @@ func _physics_process(delta):
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
+	_update_attack_range()
 
 	move_and_slide()
 
-func _on_player_entered(body: Node2D) -> void:
-	if body.is_in_group("player"):
-		# If the timer was running down, stop it because the player is back!
-		forget_timer.stop()
-		
-		# Tell the behavior tree the player is here
-		beehave_tree.blackboard.set_value("is_player_in_area", true)
-		beehave_tree.blackboard.set_value("player", body)
+func _update_attack_range() -> void:
+	# Attack pursuit is now a distance check against the single DetectArea's tracked
+	# player, rather than a second (easy to desync) Area2D.
+	if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
+		return
 
-func _on_player_exited(body: Node2D) -> void:
-	if body.is_in_group("player"):
-		# Player left the view! Start the 5-second countdown clock
+	var player = beehave_tree.blackboard.get_value("player")
+	if not is_instance_valid(player):
+		return
+
+	var distance = absf(player.global_position.x - global_position.x)
+	var was_in_attack_range = beehave_tree.blackboard.get_value("is_player_in_attack_area", false)
+	# X-distance alone isn't enough: the player can be horizontally close but have
+	# dropped out of DetectArea's actual (vertically limited) shape entirely.
+	var in_range = distance <= ATTACK_RANGE and detect_area.overlaps_body(player)
+
+	if in_range:
+		if not was_in_attack_range:
+			log_ai("ATTACK RANGE ENTER distance=%.1f" % distance)
+		forget_timer.stop()
+		beehave_tree.blackboard.set_value("is_player_in_attack_area", true)
+	elif was_in_attack_range and forget_timer.is_stopped():
+		# Out of range but still detected: start the 5-second grace period before giving up
+		# the chase, instead of dropping it the instant they step outside ATTACK_RANGE.
+		log_ai("ATTACK RANGE EXIT distance=%.1f (forget_timer started)" % distance)
 		forget_timer.start()
 
-func _on_forget_timer_timeout() -> void:
-	# 5 seconds have passed without seeing the player. Clear the data!
-	beehave_tree.blackboard.set_value("is_player_in_area", false)
+func _on_player_entered_detect_area(body: Node2D) -> void:
+	if body.is_in_group("player"):
+		
+		# Tell the behavior tree the player is here
+		beehave_tree.blackboard.set_value("is_player_in_detect_area", true)
+		beehave_tree.blackboard.set_value("player", body)
+		log_ai("DETECT ENTER player=%s" % body.name)
+
+func _on_player_exited_detect_area(body: Node2D) -> void:
+	if not body.is_in_group("player"):
+		return
+
+	log_ai("DETECT EXIT raw self=%s player=%s diff=%s" % [global_position, body.global_position, body.global_position - global_position])
+
+	if beehave_tree.blackboard.get_value("is_player_in_attack_area", false):
+		# A chase is active: don't clear the player just because they left this outer
+		# sensor, let the attack-range grace timer decide when to give up instead.
+		log_ai("DETECT EXIT player=%s but chase active, deferring to grace timer" % body.name)
+		return
+
+	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
 	beehave_tree.blackboard.set_value("player", null)
 	velocity.x = 0
+	play_idle_animation()
+	log_ai("DETECT EXIT player=%s (player cleared)" % body.name)
+
+func _on_forget_timer_timeout() -> void:
+	# 5 seconds outside ATTACK_RANGE without closing back in. Drop back to detecting
+	# (still tracked via DetectArea) instead of abandoning the chase outright.
+	beehave_tree.blackboard.set_value("is_player_in_attack_area", false)
+	velocity.x = 0
+	log_ai("FORGET_TIMER timeout (attack flag cleared)")
+
+	# The player may have already physically left DetectArea while the grace period was
+	# running (that exit was deferred above); finish it now if they're still outside.
+	var player = beehave_tree.blackboard.get_value("player")
+	if is_instance_valid(player) and not detect_area.get_overlapping_bodies().has(player):
+		beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
+		beehave_tree.blackboard.set_value("player", null)
+		play_idle_animation()
+		log_ai("FORGET_TIMER finalized deferred DETECT EXIT")
+
+func play_detecting_animation() -> void:
+	animated_sprite_2d.play("detecting")
+
+func play_idle_animation() -> void:
 	animated_sprite_2d.play("idle")
 
+func is_playing_detecting_animation() -> bool:
+	return animated_sprite_2d.animation == "detecting" and animated_sprite_2d.is_playing()
+
+
+func has_finished_detecting_animation() -> bool:
+	return animated_sprite_2d.animation == "detecting" and not animated_sprite_2d.is_playing()
+
 func play_spotted_animation() -> void:
+	spotted_animation_finished = false
 	animated_sprite_2d.play("spotted")
 
+func _on_animated_sprite_animation_finished() -> void:
+	if animated_sprite_2d.animation == "spotted":
+		spotted_animation_finished = true
+
 func is_playing_spotted_animation() -> bool:
-	return animated_sprite_2d.animation == "spotted" and animated_sprite_2d.is_playing()
+	return animated_sprite_2d.animation == "spotted" and not spotted_animation_finished
+
 
 func has_finished_spotted_animation() -> bool:
-	return animated_sprite_2d.animation == "spotted" and not animated_sprite_2d.is_playing()
+	return animated_sprite_2d.animation == "spotted" and spotted_animation_finished
 
 func chase_player(player: Node2D) -> void:
 	if not is_instance_valid(player):
@@ -82,7 +162,6 @@ func chase_player(player: Node2D) -> void:
 	_apply_facing(facing_direction)
 
 func _apply_facing(direction: float) -> void:
-	animated_sprite_2d.flip_h = direction > 0
-	# AttackArea's detection shape is offset toward the default (left) facing side, so
-	# mirror it whenever the rat flips to keep the bias in front of it.
-	attack_area.scale.x = -1.0 if direction > 0 else 1.0
+	# DetectArea's shape is centered (x=0) on the rat, so flipping the whole body's
+	# scale doesn't shift it and can't trigger the spurious-exit bug from before.
+	scale.x = -1.0 if direction > 0 else 1.0
