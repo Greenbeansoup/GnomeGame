@@ -20,14 +20,14 @@ jobs:
         with:
           lfs: true # Ensures large art assets load correctly if using Git LFS
 
-      # Step 2: The beehave addon is gitignored locally (its upstream repo nests the
-      # actual plugin a level deeper than a plain submodule checkout would expect), so
-      # fetch it fresh here and copy just the addon subfolder into place.
-      - name: Fetch beehave addon
-        run: |
-          git clone --depth 1 --branch v2.9.3 https://github.com/bitbrain/beehave.git /tmp/beehave
-          mkdir -p addons/beehave
-          cp -r /tmp/beehave/addons/beehave/. addons/beehave/
+      # Step 2: Beehave is now committed under addons/beehave so teammates and CI use
+      # the same addon files. The previous build-time vendor step is kept here as a
+      # reference in case we decide to go back to fetching Beehave during export.
+      # - name: Fetch beehave addon
+      #   run: |
+      #     git clone --depth 1 --branch v2.9.3 https://github.com/bitbrain/beehave.git /tmp/beehave
+      #     mkdir -p addons/beehave
+      #     cp -r /tmp/beehave/addons/beehave/. addons/beehave/
 
       # Step 3: Download Godot 4.7 and match export templates
       - name: Godot Windows Export

@@ -2,9 +2,4 @@
 .godot/
 /android/
 /exports/
-/addons/AsepriteWizard/
-# Vendored at build time by .github/workflows/build_windows.yml from
-# https://github.com/bitbrain/beehave.git; kept local-only since that repo's own
-# addon subfolder is nested a level deeper than a plain submodule checkout expects.
-/addons/beehave/
 .editorconfig
