@@ -3,3 +3,7 @@
 /android/
 /exports/
 .editorconfig
+# Vendored at build time by .github/workflows/build_windows.yml from
+# https://github.com/bitbrain/beehave.git; kept local-only for developers who
+# want to install the addon themselves without committing it to the project.
+/addons/beehave/

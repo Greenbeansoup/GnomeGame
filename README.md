@@ -2,7 +2,7 @@
 
 ## Local setup
 
-This project commits its Godot addons under `addons/` so teammates can clone the repo and open it without manually installing Beehave or Aseprite Wizard.
+This project commits Aseprite Wizard under `addons/` so teammates can clone the repo with the importer plugin available. Beehave is intentionally not committed; the export workflow pulls a known Beehave version from GitHub during CI builds.
 
 ### Aseprite imports
 
@@ -24,4 +24,4 @@ The project also enables Aseprite Wizard bake files. When an artist with Aseprit
 
 ### Beehave
 
-Beehave is committed in `addons/beehave`, and the GitHub Actions export workflow uses that committed copy. The old build-time Beehave download step is kept commented out in the workflow as a reference only.
+Beehave is vendored during GitHub Actions exports from `bitbrain/beehave` tag `v2.9.3`. For local development, install Beehave into `addons/beehave` yourself if you need to edit or run behavior-tree scenes locally. The folder is ignored so local installs do not get committed accidentally.
