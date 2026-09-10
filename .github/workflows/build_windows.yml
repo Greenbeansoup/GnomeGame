@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true # Ensures large art assets load correctly if using Git LFS
+          submodules: true # Pulls in addons tracked as git submodules (e.g. beehave)
 
       # Step 2: Download Godot 4.7 and match export templates
       - name: Godot Windows Export

@@ -19,6 +19,11 @@ config/icon="res://icon.svg"
 
 import/import_plugin/default_automatic_importer="SpriteFrames"
 
+[autoload]
+
+BeehaveGlobalMetrics="*uid://c3ktl6ontsdt7"
+BeehaveGlobalDebugger="*uid://bl3ma400hpvsh"
+
 [display]
 
 window/size/viewport_height=640
@@ -26,7 +31,7 @@ window/stretch/mode="viewport"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/AsepriteWizard/plugin.cfg")
+enabled=PackedStringArray("res://addons/AsepriteWizard/plugin.cfg", "res://addons/beehave/plugin.cfg")
 
 [global_group]
 
