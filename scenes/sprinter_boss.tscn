@@ -1,6 +1,12 @@
 [gd_scene format=4 uid="uid://b03448nirv1po"]
 
 [ext_resource type="Script" uid="uid://c4q3vrally4bv" path="res://scripts/sprinter_boss.gd" id="1_wjbkg"]
+[ext_resource type="Script" uid="uid://bb0t2ovl7wifo" path="res://addons/beehave/nodes/beehave_tree.gd" id="2_i3umu"]
+[ext_resource type="Script" uid="uid://8hn4kne15ac5" path="res://addons/beehave/nodes/composites/selector.gd" id="3_4m754"]
+[ext_resource type="Script" uid="uid://p5xxbs5ctove" path="res://scripts/behaviors/player_in_range_behavior.gd" id="4_srmfu"]
+[ext_resource type="Script" uid="uid://cg016dbe7gs1x" path="res://addons/beehave/nodes/composites/sequence.gd" id="5_23tw0"]
+[ext_resource type="Script" uid="uid://7l4nklklcye0" path="res://scripts/behaviors/move_to_player_behavior.gd" id="6_cabuo"]
+[ext_resource type="Script" uid="uid://5jcwjgslmx7n" path="res://scripts/behaviors/spot_player_behavior.gd" id="7_veapx"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5xdlu"]
 height = 54.0
@@ -83,6 +89,9 @@ animations = [{
 "speed": 10.0
 }]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_srmfu"]
+size = Vector2(67, 240)
+
 [node name="SprinterRat" type="CharacterBody2D" unique_id=1888432503]
 script = ExtResource("1_wjbkg")
 
@@ -94,7 +103,7 @@ shape = SubResource("CapsuleShape2D_5xdlu")
 texture_filter = 1
 position = Vector2(0, -63)
 sprite_frames = SubResource("SpriteFrames_4otcf")
-animation = &"spotted"
+animation = &"idle"
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
 }
@@ -112,3 +121,37 @@ metadata/_aseprite_wizard_config_ = {
 "source_uid": 8974190628744067102
 }
 metadata/_aseprite_wizard_source_file_hash_ = "3bd7f2ee61ad52d8d18e04d9d36215ae"
+
+[node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("blackboard", "actor")]
+script = ExtResource("2_i3umu")
+actor_node_path = NodePath("..")
+blackboard = NodePath("@Node@43442")
+actor = NodePath("..")
+metadata/_custom_type_script = "uid://bb0t2ovl7wifo"
+
+[node name="SelectorComposite" type="Node" parent="BeehaveTree" unique_id=2141388327]
+script = ExtResource("3_4m754")
+metadata/_custom_type_script = "uid://8hn4kne15ac5"
+
+[node name="SequenceComposite" type="Node" parent="BeehaveTree/SelectorComposite" unique_id=2030906625]
+script = ExtResource("5_23tw0")
+metadata/_custom_type_script = "uid://cg016dbe7gs1x"
+
+[node name="PlayerSpotted" type="Node" parent="BeehaveTree/SelectorComposite/SequenceComposite" unique_id=1789509418]
+script = ExtResource("4_srmfu")
+metadata/_custom_type_script = "uid://cbnbvj8prv63i"
+
+[node name="SpotPlayer" type="Node" parent="BeehaveTree/SelectorComposite/SequenceComposite" unique_id=1518274808]
+script = ExtResource("7_veapx")
+metadata/_custom_type_script = "uid://5jcwjgslmx7n"
+
+[node name="MoveToPlayer" type="Node" parent="BeehaveTree/SelectorComposite/SequenceComposite" unique_id=1096090710]
+script = ExtResource("6_cabuo")
+metadata/_custom_type_script = "uid://7l4nklklcye0"
+
+[node name="AttackArea" type="Area2D" parent="." unique_id=1064961890]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea" unique_id=579353350]
+position = Vector2(-93, -33)
+rotation = 1.5707964
+shape = SubResource("RectangleShape2D_srmfu")
