@@ -3,12 +3,11 @@
 importer="aseprite_wizard.plugin.spriteframes"
 type="SpriteFrames"
 uid="uid://bl3fov8sn6cgi"
-path="res://.godot/imported/Background dirt 1.aseprite-64783c6ec006d7ae04ea5b831c31ef34.res"
+valid=false
 
 [deps]
 
 source_file="res://assets/sprites/Background dirt 1.aseprite"
-dest_files=["res://.godot/imported/Background dirt 1.aseprite-64783c6ec006d7ae04ea5b831c31ef34.res"]
 
 [params]
 

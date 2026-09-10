@@ -13,50 +13,50 @@
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5xdlu"]
 height = 54.0
 
-[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_wjbkg"]
-_data = PackedByteArray("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")
-size_override = Vector2(384, 384)
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_veapx"]
+_data = PackedByteArray("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")
+size_override = Vector2(640, 512)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_i3umu"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
+[sub_resource type="AtlasTexture" id="AtlasTexture_4otcf"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
 region = Rect2(256, 0, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_bnoks"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
-region = Rect2(0, 128, 128, 128)
+[sub_resource type="AtlasTexture" id="AtlasTexture_t2w67"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
+region = Rect2(384, 0, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_4m754"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
+[sub_resource type="AtlasTexture" id="AtlasTexture_y3i08"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
 region = Rect2(0, 0, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_srmfu"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
+[sub_resource type="AtlasTexture" id="AtlasTexture_edks4"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
 region = Rect2(128, 0, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_ut412"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
+[sub_resource type="AtlasTexture" id="AtlasTexture_hgiim"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_66a6x"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
+region = Rect2(0, 128, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8yi7y"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
 region = Rect2(128, 128, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_23tw0"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
+[sub_resource type="AtlasTexture" id="AtlasTexture_y6n11"]
+atlas = SubResource("PortableCompressedTexture2D_veapx")
 region = Rect2(256, 128, 128, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_cabuo"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
-region = Rect2(0, 256, 128, 128)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_veapx"]
-atlas = SubResource("PortableCompressedTexture2D_wjbkg")
-region = Rect2(128, 256, 128, 128)
-
-[sub_resource type="SpriteFrames" id="SpriteFrames_4otcf"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_48hpv"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_i3umu")
+"texture": SubResource("AtlasTexture_4otcf")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_bnoks")
+"texture": SubResource("AtlasTexture_t2w67")
 }],
 "loop": 1,
 "name": &"detecting",
@@ -64,10 +64,10 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_4m754")
+"texture": SubResource("AtlasTexture_y3i08")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_srmfu")
+"texture": SubResource("AtlasTexture_edks4")
 }],
 "loop": 1,
 "name": &"idle",
@@ -75,16 +75,16 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_ut412")
+"texture": SubResource("AtlasTexture_hgiim")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_23tw0")
+"texture": SubResource("AtlasTexture_66a6x")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_cabuo")
+"texture": SubResource("AtlasTexture_8yi7y")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_veapx")
+"texture": SubResource("AtlasTexture_y6n11")
 }],
 "loop": 0,
 "name": &"spotted",
@@ -104,8 +104,8 @@ shape = SubResource("CapsuleShape2D_5xdlu")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1981843114]
 texture_filter = 1
 position = Vector2(0, -63)
-sprite_frames = SubResource("SpriteFrames_4otcf")
-animation = &"idle"
+sprite_frames = SubResource("SpriteFrames_48hpv")
+animation = &"spotted"
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
 }
@@ -122,12 +122,12 @@ metadata/_aseprite_wizard_config_ = {
 "source": "res://assets/sprites/Sprinter Boss.aseprite",
 "source_uid": 8974190628744067102
 }
-metadata/_aseprite_wizard_source_file_hash_ = "3bd7f2ee61ad52d8d18e04d9d36215ae"
+metadata/_aseprite_wizard_source_file_hash_ = "6e1e44497b9b971a33db5f656a00d157"
 
-[node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("blackboard", "actor")]
+[node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("actor")]
 script = ExtResource("2_i3umu")
 actor_node_path = NodePath("..")
-blackboard = NodePath("@Node@38124")
+blackboard = null
 actor = NodePath("..")
 
 [node name="SelectorReactiveComposite" type="Node" parent="BeehaveTree" unique_id=2141388327]
