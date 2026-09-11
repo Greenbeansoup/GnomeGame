@@ -1,5 +1,6 @@
 extends CharacterBody2D
-@onready var animated_sprite_2d = $AnimatedSprite2D
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var beehave_tree = $BeehaveTree
 @onready var detect_area = $DetectArea
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
@@ -15,11 +16,15 @@ const FACING_FLIP_BUFFER = 8.0
 const DETECTION_REAR_BUFFER = 16.0
 # How close the player must be (in pixels) to escalate from detecting to attack pursuit.
 const ATTACK_RANGE = 150.0
+# Animations are authored at the Aseprite frame rate; these slow down playback at runtime.
+const IDLE_SPEED_SCALE = 0.1
+const DETECTING_SPEED_SCALE = 0.5
 
 # Facing left (unflipped) by default; positive means facing right.
 var facing_direction := -1.0
-# Tracked explicitly instead of via is_playing(), since that can't be relied on to flip
-# false the instant a non-looping animation completes.
+# AnimationPlayer clears current_animation once a non-looping animation ends, so the
+# behaviour tree needs its own record of what was last requested and whether it finished.
+var current_animation := ""
 var spotted_animation_finished := false
 var windup_animation_finished := false
 
@@ -30,10 +35,8 @@ func log_ai(msg: String) -> void:
 		print("[AI %s] %s" % [name, msg])
 
 func _ready():
-	animated_sprite_2d.sprite_frames.set_animation_speed("idle", 1)
-	animated_sprite_2d.sprite_frames.set_animation_speed("detecting", 5.0)
 	play_idle_animation()
-	animated_sprite_2d.animation_finished.connect(_on_animated_sprite_animation_finished)
+	animation_player.animation_finished.connect(_on_animation_finished)
 	
 	detect_area.body_entered.connect(_on_player_entered_detect_area)
 	detect_area.body_exited.connect(_on_player_exited_detect_area)
@@ -155,47 +158,60 @@ func _on_forget_timer_timeout() -> void:
 		play_idle_animation()
 		log_ai("FORGET_TIMER finalized deferred DETECT EXIT")
 
+func play_animation(anim_name: String, speed_scale: float = 1.0) -> void:
+	current_animation = anim_name
+	animation_player.play(anim_name, -1.0, speed_scale)
+
 func play_detecting_animation() -> void:
-	animated_sprite_2d.play("detecting")
+	play_animation("detecting", DETECTING_SPEED_SCALE)
 
 func play_idle_animation() -> void:
-	animated_sprite_2d.play("idle")
+	play_animation("idle", IDLE_SPEED_SCALE)
 
 func is_playing_detecting_animation() -> bool:
-	return animated_sprite_2d.animation == "detecting" and animated_sprite_2d.is_playing()
+	return current_animation == "detecting" and animation_player.is_playing()
 
 
 func has_finished_detecting_animation() -> bool:
-	return animated_sprite_2d.animation == "detecting" and not animated_sprite_2d.is_playing()
+	return current_animation == "detecting" and not animation_player.is_playing()
 
 func play_spotted_animation() -> void:
 	spotted_animation_finished = false
-	animated_sprite_2d.play("spotted")
+	play_animation("spotted")
 
-func _on_animated_sprite_animation_finished() -> void:
-	if animated_sprite_2d.animation == "spotted":
+func _on_animation_finished(anim_name: StringName) -> void:
+	if anim_name == "spotted":
 		spotted_animation_finished = true
-	if animated_sprite_2d.animation == "windup":
+	if anim_name == "windup":
 		windup_animation_finished = true
 
 func is_playing_spotted_animation() -> bool:
-	return animated_sprite_2d.animation == "spotted" and not spotted_animation_finished
+	return current_animation == "spotted" and not spotted_animation_finished
 
 
 func has_finished_spotted_animation() -> bool:
-	return animated_sprite_2d.animation == "spotted" and spotted_animation_finished
+	return current_animation == "spotted" and spotted_animation_finished
+
+func face_player(player: Node2D) -> void:
+	if not is_instance_valid(player):
+		return
+
+	var dx := player.global_position.x - global_position.x
+	if not is_zero_approx(dx):
+		facing_direction = signf(dx)
+	_apply_facing(facing_direction)
 
 func play_windup_animation() -> void:
 	windup_animation_finished = false
 	velocity.x = 0.0
-	animated_sprite_2d.play("windup")
+	play_animation("windup")
 
 func is_playing_windup_animation() -> bool:
-	return animated_sprite_2d.animation == "windup" and not windup_animation_finished
+	return current_animation == "windup" and not windup_animation_finished
 
 
 func has_finished_windup_animation() -> bool:
-	return animated_sprite_2d.animation == "windup" and windup_animation_finished
+	return current_animation == "windup" and windup_animation_finished
 
 func chase_player(player: Node2D) -> void:
 	if not is_instance_valid(player):
@@ -207,9 +223,9 @@ func chase_player(player: Node2D) -> void:
 		facing_direction = signf(dx)
 
 	velocity.x = 0.0 if absf(dx) <= underfoot_buffer else facing_direction * CHASE_SPEED
-	if animated_sprite_2d.animation != "running":
-		animated_sprite_2d.play("running")
+	if current_animation != "running":
+		play_animation("running")
 	_apply_facing(facing_direction)
 
 func _apply_facing(direction: float) -> void:
-	animated_sprite_2d.flip_h = direction > 0
+	sprite.flip_h = direction > 0

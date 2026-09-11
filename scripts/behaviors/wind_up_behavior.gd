@@ -7,6 +7,7 @@ func tick(actor, blackboard: Blackboard):
 		return SUCCESS
 
 	if not actor.is_playing_windup_animation():
+		actor.face_player(blackboard.get_value("player"))
 		actor.play_windup_animation()
 
 	return RUNNING
