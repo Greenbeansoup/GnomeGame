@@ -21,6 +21,7 @@ var facing_direction := -1.0
 # Tracked explicitly instead of via is_playing(), since that can't be relied on to flip
 # false the instant a non-looping animation completes.
 var spotted_animation_finished := false
+var windup_animation_finished := false
 
 const DEBUG_AI := false
 
@@ -174,6 +175,8 @@ func play_spotted_animation() -> void:
 func _on_animated_sprite_animation_finished() -> void:
 	if animated_sprite_2d.animation == "spotted":
 		spotted_animation_finished = true
+	if animated_sprite_2d.animation == "windup":
+		windup_animation_finished = true
 
 func is_playing_spotted_animation() -> bool:
 	return animated_sprite_2d.animation == "spotted" and not spotted_animation_finished
@@ -181,6 +184,18 @@ func is_playing_spotted_animation() -> bool:
 
 func has_finished_spotted_animation() -> bool:
 	return animated_sprite_2d.animation == "spotted" and spotted_animation_finished
+
+func play_windup_animation() -> void:
+	windup_animation_finished = false
+	velocity.x = 0.0
+	animated_sprite_2d.play("windup")
+
+func is_playing_windup_animation() -> bool:
+	return animated_sprite_2d.animation == "windup" and not windup_animation_finished
+
+
+func has_finished_windup_animation() -> bool:
+	return animated_sprite_2d.animation == "windup" and windup_animation_finished
 
 func chase_player(player: Node2D) -> void:
 	if not is_instance_valid(player):
@@ -192,6 +207,8 @@ func chase_player(player: Node2D) -> void:
 		facing_direction = signf(dx)
 
 	velocity.x = 0.0 if absf(dx) <= underfoot_buffer else facing_direction * CHASE_SPEED
+	if animated_sprite_2d.animation != "running":
+		animated_sprite_2d.play("running")
 	_apply_facing(facing_direction)
 
 func _apply_facing(direction: float) -> void:
