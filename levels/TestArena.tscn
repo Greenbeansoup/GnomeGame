@@ -34,3 +34,4 @@ grid_coords = Vector2i(0, -1)
 
 [node name="SprinterRat" parent="." unique_id=1888432503 instance=ExtResource("6_0j3m5")]
 position = Vector2(370, 0)
+attack_range = 56.0

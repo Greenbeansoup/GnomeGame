@@ -4,7 +4,7 @@ extends ActionLeaf
 func tick(actor, blackboard: Blackboard):
 	# Sequence caches a passed condition and won't re-tick it while this action keeps
 	# running, so re-check here for a hard stop the instant the player leaves the area.
-	if not blackboard.get_value("is_player_in_detect_area", false) || blackboard.get_value("is_player_in_attack_area", false):
+	if not blackboard.get_value("is_player_in_detect_area", false) || blackboard.get_value("is_player_in_pursuit_range", false):
 		actor.play_idle_animation()
 		return FAILURE
 

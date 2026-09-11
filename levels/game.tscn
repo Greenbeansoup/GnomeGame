@@ -93,6 +93,7 @@ position = Vector2(73, 1)
 bounce_force = 300.0
 
 [node name="JumpHint" parent="." unique_id=1772848057 instance=ExtResource("8_0tnpc")]
+z_index = 1
 offset_left = -1190.0
 offset_top = -51.0
 offset_right = -1103.0
@@ -100,6 +101,7 @@ offset_bottom = -11.0
 text = "Jumpt to Jump"
 
 [node name="SprintHint" parent="." unique_id=1578243100 instance=ExtResource("8_0tnpc")]
+z_index = 1
 offset_left = -788.0
 offset_top = -48.0
 offset_right = -678.0
@@ -108,6 +110,7 @@ text = "Sprint to Sprint"
 hint_type = "Sprint"
 
 [node name="DigHint" parent="." unique_id=816199909 instance=ExtResource("8_0tnpc")]
+z_index = 1
 offset_left = -346.0
 offset_top = -60.0
 offset_right = -259.0
@@ -117,6 +120,7 @@ hint_type = "Dig"
 
 [node name="DigOutHint" parent="." unique_id=1555947086 instance=ExtResource("8_0tnpc")]
 visible = false
+z_index = 1
 offset_left = 96.0
 offset_top = -220.0
 offset_right = 183.0
@@ -125,6 +129,7 @@ text = "X to Dig Out"
 hint_type = "Dig Out"
 
 [node name="DigOutDirectionally" parent="." unique_id=1199713501 instance=ExtResource("8_0tnpc")]
+z_index = 1
 offset_left = -141.0
 offset_top = -376.0
 offset_right = 47.0
@@ -230,6 +235,8 @@ grid_coords = Vector2i(-2, -1)
 
 [node name="SprinterRat" parent="." unique_id=1888432503 instance=ExtResource("14_trtic")]
 position = Vector2(579, -1042)
+attack_range = 56.0
+chase_speed = 191.0
 
 [node name="DemoLevel" parent="." unique_id=605025223 instance=ExtResource("14_ir15t")]
 position = Vector2(3, 0)

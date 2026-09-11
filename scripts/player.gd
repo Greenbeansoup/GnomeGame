@@ -34,6 +34,7 @@ const DIG_OUT_DOWN_EXTRA_SIDE_NUDGE = 2.0
 const EXPLOSION_HOLD_DURATION = 0.25
 const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
 const MUSHROOM_BOUNCE_DEBOUNCE_DURATION = 0.08
+const ATTACK_PUSH_CONTROL_LOCK_DURATION = 0.18
 # Downward speed applied the instant a ground pound starts.
 const GROUND_POUND_INITIAL_SPEED = 300.0
 # The drillmove animation art is drawn sideways, so rotate it 90 degrees to point down;
@@ -77,6 +78,7 @@ var mushroom_bounce_normal = Vector2.ZERO
 var mushroom_bounce_steer_timer = 0.0
 var last_bounced_mushroom: Node2D
 var mushroom_bounce_debounce_timer = 0.0
+var attack_push_timer = 0.0
 enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
 # Distinguishes which impact started the current smack/fall cycle, since both share the
@@ -100,6 +102,7 @@ func _physics_process(delta):
 	var player_active = false
 	var direction = 0.0
 	mushroom_bounce_debounce_timer = maxf(mushroom_bounce_debounce_timer - delta, 0.0)
+	attack_push_timer = maxf(attack_push_timer - delta, 0.0)
 
 	if not is_exploding and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
 		_start_explosion()
@@ -192,7 +195,9 @@ func _process_default_movement(delta):
 
 	# 3. HANDLE HORIZONTAL MOVEMENT
 	var direction = 0.0
-	if is_ground_pounding:
+	if attack_push_timer > 0.0:
+		direction = 0.0
+	elif is_ground_pounding:
 		velocity.x = 0.0
 	else:
 		direction = Input.get_axis("left", "right")
@@ -673,6 +678,19 @@ func _start_explosion():
 	is_exploding = true
 	velocity = Vector2.ZERO
 	animated_sprite_2d.play("explode")
+
+
+func squash():
+	if not is_exploding:
+		_start_explosion()
+
+
+func apply_attack_push(push_velocity: Vector2):
+	if is_exploding:
+		return
+
+	velocity = push_velocity
+	attack_push_timer = ATTACK_PUSH_CONTROL_LOCK_DURATION
 	
 func _on_animation_finished():
 	if is_exploding and animated_sprite_2d.animation == "explode":
