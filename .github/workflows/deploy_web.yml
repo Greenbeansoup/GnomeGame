@@ -50,11 +50,31 @@ jobs:
           name: web-build
           path: ${{ steps.export.outputs.build_directory }}/Web
 
+      - name: Set Up Butler
+        uses: remarkablegames/setup-butler@v3
+
       - name: Publish to Itch.io
-        uses: KikimoraGames/itch-publish@v0.0.3
-        with:
-          butlerApiKey: ${{ secrets.BUTLER_API_KEY }}
-          gameData: ${{ steps.export.outputs.build_directory }}/Web
-          itchUsername: ${{ secrets.ITCHIO_USERNAME }}
-          itchGameId: ${{ secrets.ITCHIO_GAME }}
-          buildChannel: web
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCHIO_USERNAME: ${{ vars.ITCHIO_USERNAME || secrets.ITCHIO_USERNAME }}
+          ITCHIO_GAME: ${{ vars.ITCHIO_GAME || secrets.ITCHIO_GAME }}
+          WEB_BUILD_DIRECTORY: ${{ steps.export.outputs.build_directory }}/Web
+        run: |
+          if [[ -z "$BUTLER_API_KEY" ]]; then
+            echo "::error::BUTLER_API_KEY is not configured as a repository secret."
+            exit 1
+          fi
+          if [[ -z "$ITCHIO_USERNAME" ]]; then
+            echo "::error::ITCHIO_USERNAME is not configured as a repository variable or secret."
+            exit 1
+          fi
+          if [[ -z "$ITCHIO_GAME" ]]; then
+            echo "::error::ITCHIO_GAME is not configured as a repository variable or secret."
+            exit 1
+          fi
+          if [[ "$ITCHIO_USERNAME" == *"/"* || "$ITCHIO_GAME" == *"/"* ]]; then
+            echo "::error::Use only the itch.io username and game URL slug, not a URL or path."
+            exit 1
+          fi
+
+          butler push "$WEB_BUILD_DIRECTORY" "$ITCHIO_USERNAME/$ITCHIO_GAME:web"
