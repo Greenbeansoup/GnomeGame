@@ -7,14 +7,24 @@ var following_player: Node2D = null
 var active_zone: CameraZone = null
 
 func _ready() -> void:
-	# Defer so every CameraZone has already run its own _ready() and is listening.
+	get_tree().node_added.connect(_on_node_added)
+	# Defer so every initial CameraZone has entered the tree.
 	call_deferred("_connect_zones")
 
 func _connect_zones() -> void:
 	for zone in get_tree().get_nodes_in_group("camera_zones"):
 		if zone is CameraZone:
-			zone.zone_activated.connect(_on_zone_activated)
-			zone.zone_exited.connect(_on_zone_exited)
+			_connect_zone(zone)
+
+func _on_node_added(node: Node) -> void:
+	if node is CameraZone:
+		_connect_zone(node)
+
+func _connect_zone(zone: CameraZone) -> void:
+	if not zone.zone_activated.is_connected(_on_zone_activated):
+		zone.zone_activated.connect(_on_zone_activated)
+	if not zone.zone_exited.is_connected(_on_zone_exited):
+		zone.zone_exited.connect(_on_zone_exited)
 
 func _process(_delta: float) -> void:
 	if following_player and active_zone:
