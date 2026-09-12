@@ -77,4 +77,17 @@ jobs:
             exit 1
           fi
 
+          itch_projects=$(curl --fail-with-body --silent --show-error \
+            --header "Authorization: Bearer $BUTLER_API_KEY" \
+            https://api.itch.io/profile/games)
+          itch_target="$ITCHIO_USERNAME.itch.io/$ITCHIO_GAME"
+          if ! jq --exit-status --arg target "$itch_target" '
+            (.games // []) | any(.[];
+              (.url | sub("^https?://"; "") | ascii_downcase) == ($target | ascii_downcase)
+            )
+          ' <<<"$itch_projects" > /dev/null; then
+            echo "::error::The configured itch.io project is not accessible to this API key. Create the project first, verify its URL slug, and ensure the key belongs to its owner or an editor."
+            exit 1
+          fi
+
           butler push "$WEB_BUILD_DIRECTORY" "$ITCHIO_USERNAME/$ITCHIO_GAME:web"
