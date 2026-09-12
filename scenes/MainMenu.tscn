@@ -36,6 +36,7 @@ text = "Start"
 flat = true
 
 [node name="StartTestArena" type="Button" parent="VBoxContainer" unique_id=1596448525]
+process_mode = 3
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_0ykhv")
 text = "Start Test Arena"

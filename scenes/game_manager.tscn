@@ -1,7 +1,24 @@
 [gd_scene format=3 uid="uid://ui174expk2t3"]
 
+[ext_resource type="Script" uid="uid://r3ul6f25jrid" path="res://scripts/game_manager.gd" id="1_glms7"]
 [ext_resource type="PackedScene" uid="uid://bxgaqn2qjbj4w" path="res://scenes/MainMenu.tscn" id="1_hwd4i"]
+[ext_resource type="PackedScene" uid="uid://b0gmgp4vqh03w" path="res://levels/game.tscn" id="3_eaq8r"]
+[ext_resource type="PackedScene" uid="uid://bc7qjsyknom4q" path="res://scenes/pause_menu.tscn" id="3_udu3i"]
+[ext_resource type="PackedScene" uid="uid://bg824gii8crat" path="res://levels/TestArena.tscn" id="4_ternb"]
 
 [node name="GameManager" type="Node2D" unique_id=1953023846]
+process_mode = 3
+script = ExtResource("1_glms7")
+level_1_scene = ExtResource("3_eaq8r")
+test_arena_scene = ExtResource("4_ternb")
+main_menu_scene = ExtResource("1_hwd4i")
 
-[node name="MainMenu" parent="." unique_id=1332447442 instance=ExtResource("1_hwd4i")]
+[node name="UI" type="CanvasLayer" parent="." unique_id=1393724239]
+layer = 10
+
+[node name="MenuHolder" type="Node" parent="UI" unique_id=1332447442]
+
+[node name="PauseMenu" parent="UI" unique_id=1073874374 instance=ExtResource("3_udu3i")]
+
+[node name="CurrentScene" type="Node2D" parent="." unique_id=1010204529]
+process_mode = 1
