@@ -5,6 +5,7 @@ extends Camera2D
 var tween: Tween
 var following_player: Node2D = null
 var active_zone: CameraZone = null
+var overlapping_zones: Array[CameraZone] = []
 
 func _ready() -> void:
 	get_tree().node_added.connect(_on_node_added)
@@ -31,6 +32,11 @@ func _process(_delta: float) -> void:
 		global_position = _clamp_to_zone(following_player.global_position, active_zone)
 
 func _on_zone_activated(zone: CameraZone, player: Node2D) -> void:
+	overlapping_zones.erase(zone)
+	overlapping_zones.append(zone)
+	_activate_zone(zone, player)
+
+func _activate_zone(zone: CameraZone, player: Node2D) -> void:
 	if tween:
 		tween.kill()
 
@@ -46,10 +52,16 @@ func _on_zone_activated(zone: CameraZone, player: Node2D) -> void:
 		.set_ease(Tween.EASE_OUT)
 
 func _on_zone_exited(zone: CameraZone, player: Node2D) -> void:
-	if zone.mode == CameraZone.Mode.FOLLOW and following_player == player:
-		following_player = null
-	if active_zone == zone:
+	overlapping_zones.erase(zone)
+
+	if active_zone != zone:
+		return
+
+	if overlapping_zones.is_empty():
 		active_zone = null
+		following_player = null
+	else:
+		_activate_zone(overlapping_zones.back(), player)
 
 # Keeps the camera's visible rect fully inside the zone; axes narrower than the view
 # (e.g. a corridor one camera-width wide) are simply pinned to the zone's center.
