@@ -5,6 +5,16 @@ class_name WorldChunk
 @export var terrain_layer_paths: Array[NodePath] = []
 
 
+func get_terrain_layers() -> Array[TileMapLayer]:
+	var terrain_layers: Array[TileMapLayer] = []
+	for terrain_path in terrain_layer_paths:
+		var terrain := get_node_or_null(terrain_path) as TileMapLayer
+		if terrain:
+			terrain_layers.append(terrain)
+
+	return terrain_layers
+
+
 func get_terrain_at(world_position: Vector2) -> TileMapLayer:
 	var closest_terrain: TileMapLayer
 	var closest_distance_squared := INF
@@ -31,9 +41,8 @@ func get_terrain_at(world_position: Vector2) -> TileMapLayer:
 
 
 func get_primary_terrain() -> TileMapLayer:
-	for terrain_path in terrain_layer_paths:
-		var terrain := get_node_or_null(terrain_path) as TileMapLayer
-		if terrain:
-			return terrain
+	var terrain_layers := get_terrain_layers()
+	if not terrain_layers.is_empty():
+		return terrain_layers.front()
 
 	return null

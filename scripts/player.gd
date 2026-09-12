@@ -3,6 +3,7 @@ extends CharacterBody2D
 @onready var animated_sprite_2d = $AnimatedSprite2D
 @onready var collision_shape_2d = $CollisionShape2D
 @export var tile_map_layer: TileMapLayer
+var terrain_layers: Array[TileMapLayer] = []
 
 # Abilities gated behind these can be unlocked/locked at runtime (e.g. via pickups).
 @export var sprint_unlocked: bool = true
@@ -78,6 +79,11 @@ var mushroom_bounce_normal = Vector2.ZERO
 var mushroom_bounce_steer_timer = 0.0
 var last_bounced_mushroom: Node2D
 var mushroom_bounce_debounce_timer = 0.0
+
+
+func set_terrain_layers(layers: Array[TileMapLayer], active_layer: TileMapLayer) -> void:
+	terrain_layers = layers
+	tile_map_layer = active_layer
 var attack_push_timer = 0.0
 enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
@@ -635,7 +641,8 @@ func _is_tile_empty_for_dig_out(cell: Vector2i) -> bool:
 
 # Helper that checks whether the full sprite lies inside earthwalkable tiles of the layer.
 func _is_world_position_inside_tile(world_position: Vector2) -> bool:
-	if not tile_map_layer:
+	var candidate_layers := _get_candidate_terrain_layers()
+	if candidate_layers.is_empty():
 		return false
 
 	var corners = [
@@ -646,12 +653,29 @@ func _is_world_position_inside_tile(world_position: Vector2) -> bool:
 	]
 
 	for corner in corners:
-		var local_pos = tile_map_layer.to_local(corner)
-		var map_pos = tile_map_layer.local_to_map(local_pos)
-		if not _is_tile_earthwalkable(map_pos):
+		var corner_is_earthwalkable := false
+		for terrain in candidate_layers:
+			var map_pos := terrain.local_to_map(terrain.to_local(corner))
+			var tile_data := terrain.get_cell_tile_data(map_pos)
+			if tile_data != null and tile_data.get_custom_data("can_earthwalk") != false:
+				corner_is_earthwalkable = true
+				break
+
+		if not corner_is_earthwalkable:
 			return false
 
 	return true
+
+
+func _get_candidate_terrain_layers() -> Array[TileMapLayer]:
+	var candidates: Array[TileMapLayer] = []
+	for terrain in terrain_layers:
+		if is_instance_valid(terrain) and terrain not in candidates:
+			candidates.append(terrain)
+	if is_instance_valid(tile_map_layer) and tile_map_layer not in candidates:
+		candidates.append(tile_map_layer)
+
+	return candidates
 
 
 # Returns the physics collision shape's local-space [min, max] bounds around its center;
@@ -691,11 +715,19 @@ func apply_attack_push(push_velocity: Vector2):
 
 	velocity = push_velocity
 	attack_push_timer = ATTACK_PUSH_CONTROL_LOCK_DURATION
+
+
+func request_level_restart() -> void:
+	var game_manager := get_tree().get_first_node_in_group("game_manager")
+	if game_manager and game_manager.has_method("restart_current_level"):
+		game_manager.call_deferred("restart_current_level")
+	else:
+		get_tree().call_deferred("reload_current_scene")
 	
 func _on_animation_finished():
 	if is_exploding and animated_sprite_2d.animation == "explode":
 		await get_tree().create_timer(EXPLOSION_HOLD_DURATION).timeout
-		get_tree().reload_current_scene()
+		request_level_restart()
 		return
 
 	if wall_smack_state == WallSmackState.SMACK and animated_sprite_2d.animation == _get_smack_animation():

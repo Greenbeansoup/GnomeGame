@@ -1,17 +1,9 @@
 [gd_scene format=3 uid="uid://es1obu8otokk"]
 
-[sub_resource type="Gradient" id="Gradient_vtaks"]
-offsets = PackedFloat32Array(0, 0.19301848, 0.33470225, 0.6714579)
-colors = PackedColorArray(1, 1, 1, 1, 0.39332515, 0.39332515, 0.39332515, 1, 0.29866666, 0.29866666, 0.29866666, 1, 0, 0, 0, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_g4v7s"]
-gradient = SubResource("Gradient_vtaks")
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(0.980057, 1)
+[ext_resource type="Texture2D" uid="uid://ithhdugh85g0" path="res://assets/textures/bioluminescent_glow_texture.tres" id="1_jgc0v"]
 
 [node name="PointLight2D" type="PointLight2D" unique_id=307559265]
-color = Color(0.14616573, 0.8250077, 0.81699944, 1)
+color = Color(0.14509805, 0.8235294, 0.8156863, 1)
 energy = 1.4
 shadow_enabled = true
-texture = SubResource("GradientTexture2D_g4v7s")
+texture = ExtResource("1_jgc0v")

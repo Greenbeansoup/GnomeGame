@@ -10,7 +10,10 @@ extends Node2D
 @onready var ui_layer = $UI
 @onready var current_scene_holder = $CurrentScene
 
+var current_level_scene: PackedScene
+
 func _ready():
+	add_to_group("game_manager")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	# Start by showing the main menu
 	show_main_menu()
@@ -34,6 +37,7 @@ func _unhandled_input(event: InputEvent):
 		toggle_pause()
 
 func show_main_menu():
+	current_level_scene = null
 	# Clear out the temporary menus, but the PauseMenu is safe!
 	_clear_children(menu_holder) 
 	_clear_children(current_scene_holder)
@@ -63,11 +67,21 @@ func _on_main_menu_pressed():
 	show_main_menu() # Run your existing function to load the main menu
 
 func start_level(level_scene: PackedScene):
+	current_level_scene = level_scene
 	# Remove the main menu
 	_clear_children(menu_holder)
-	
-	# Load the actual game level
-	var level = level_scene.instantiate()
+	_replace_current_level()
+
+func restart_current_level():
+	if not current_level_scene:
+		return
+	get_tree().paused = false
+	pause_menu.hide()
+	_replace_current_level()
+
+func _replace_current_level():
+	_clear_children(current_scene_holder)
+	var level := current_level_scene.instantiate()
 	current_scene_holder.add_child(level)
 
 func _clear_children(target_node: Node):

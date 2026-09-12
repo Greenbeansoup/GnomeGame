@@ -6,7 +6,7 @@ extends Node2D
 
 func _ready():
 	# 1. Create an instance of the player
-	var player = player_scene.instantiate()
+	var player = player_scene.instantiate() as CharacterBody2D
 	
 	# 2. Position the player at the Marker2D's location
 	player.global_position = player_spawn.global_position

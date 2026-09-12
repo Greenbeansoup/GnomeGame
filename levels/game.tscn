@@ -2,8 +2,13 @@
 
 [ext_resource type="Script" uid="uid://hwymia3hycr" path="res://scripts/camera_controller.gd" id="1_0tnpc"]
 [ext_resource type="Script" uid="uid://bjcuxdpg5c6dk" path="res://scripts/level_manager.gd" id="1_6f163"]
+[ext_resource type="Texture2D" uid="uid://cwh85xd3dw1ee" path="res://assets/sprites/Background.png" id="1_iywne"]
 [ext_resource type="PackedScene" uid="uid://ic735kty8hxt" path="res://scenes/player.tscn" id="1_uwrxv"]
-[ext_resource type="PackedScene" uid="uid://cvb8suwwsfxry" path="res://levels/demo_level.tscn" id="14_ir15t"]
+[ext_resource type="PackedScene" uid="uid://dmeo0fsjuf6hh" path="res://levels/vertical_tutorial_chunk.tscn" id="6_arvxu"]
+[ext_resource type="PackedScene" uid="uid://cuyil3q2opn2g" path="res://levels/start_chunk.tscn" id="6_cnc74"]
+[ext_resource type="PackedScene" uid="uid://6pe0ukemcnqb" path="res://levels/diagonal_bounce_column_chunk.tscn" id="6_kc1m6"]
+[ext_resource type="PackedScene" uid="uid://dk2eu0n71nq2m" path="res://levels/sprint_tutorial_chunk.tscn" id="6_vpik0"]
+[ext_resource type="PackedScene" uid="uid://dvjlj1liu3ntq" path="res://levels/sprinter_boss_chunk.tscn" id="6_y7kp8"]
 [ext_resource type="Script" uid="uid://ckvc4nn3ywi1n" path="res://scripts/chunk_loader.gd" id="15_chunk_loader"]
 [ext_resource type="Script" uid="uid://8unsjw0k4bny" path="res://scripts/chunk_slot.gd" id="16_chunk_slot"]
 
@@ -22,14 +27,66 @@ position_smoothing_enabled = true
 position_smoothing_speed = 12.0
 script = ExtResource("1_0tnpc")
 
+[node name="Parallax2D" type="Parallax2D" parent="." unique_id=1057800305]
+z_index = -5
+
+[node name="Sprite2D" type="Sprite2D" parent="Parallax2D" unique_id=319405126]
+texture_filter = 1
+position = Vector2(-377.75012, -551.1032)
+scale = Vector2(10.892578, 9.117994)
+texture = ExtResource("1_iywne")
+metadata/_aseprite_wizard_interface_config_ = {
+"layer_section": true,
+"output_section": true,
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"convert_fps_field": 60.0,
+"convert_ms_field": 16.0,
+"convert_to_fps": false,
+"embed_tex": true,
+"i_mode": 1,
+"keep_anim_length": false,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"player": "",
+"scale": "1.0",
+"slice": "",
+"source": "res://assets/sprites/Background dirt 1.aseprite",
+"source_uid": 3216630281708961572
+}
+metadata/_aseprite_wizard_source_file_hash_ = "62d02773911249d65968f65ca92437b2"
+
 [node name="ChunkLoader" type="Node2D" parent="." unique_id=1670907364]
 script = ExtResource("15_chunk_loader")
 
-[node name="DemoLevelSlot" type="Node2D" parent="ChunkLoader" unique_id=1228703242]
-position = Vector2(3, 0)
+[node name="SprinterBossSlot" type="Node2D" parent="ChunkLoader"]
 script = ExtResource("16_chunk_slot")
-chunk_scene = ExtResource("14_ir15t")
-active_rect = Rect2(-1500, -1400, 2400, 1600)
+chunk_scene = ExtResource("6_y7kp8")
+active_rect = Rect2(-239, -1344, 864, 320)
+
+[node name="DiagonalBounceSlot" type="Node2D" parent="ChunkLoader"]
+script = ExtResource("16_chunk_slot")
+chunk_scene = ExtResource("6_kc1m6")
+active_rect = Rect2(-239, -1024, 576, 320)
+
+[node name="VerticalTutorialSlot" type="Node2D" parent="ChunkLoader"]
+script = ExtResource("16_chunk_slot")
+chunk_scene = ExtResource("6_arvxu")
+active_rect = Rect2(-239, -704, 576, 768)
+
+[node name="SprintTutorialSlot" type="Node2D" parent="ChunkLoader"]
+script = ExtResource("16_chunk_slot")
+chunk_scene = ExtResource("6_vpik0")
+active_rect = Rect2(-815, -256, 576, 320)
+
+[node name="StartSlot" type="Node2D" parent="ChunkLoader"]
+script = ExtResource("16_chunk_slot")
+chunk_scene = ExtResource("6_cnc74")
+active_rect = Rect2(-1391, -255, 576, 320)
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=337352650]
 position = Vector2(-1306, -75)

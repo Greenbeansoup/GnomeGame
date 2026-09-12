@@ -1,16 +1,9 @@
 [gd_scene format=3 uid="uid://br5h1yjhpx8ub"]
 
-[sub_resource type="Gradient" id="Gradient_vtaks"]
-offsets = PackedFloat32Array(0, 0.14168377, 0.5790554, 0.77002054)
-colors = PackedColorArray(1, 1, 1, 1, 0.29866666, 0.29866666, 0.29866666, 1, 0.012688458, 0.012688458, 0.012688458, 1, 0, 0, 0, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_g4v7s"]
-gradient = SubResource("Gradient_vtaks")
-fill = 1
-fill_from = Vector2(0.5, 0.5)
+[ext_resource type="Texture2D" uid="uid://cdvlf6n4wp6db" path="res://assets/textures/mushroom_glow_texture.tres" id="1_k23jb"]
 
 [node name="PointLight2D" type="PointLight2D" unique_id=307559265]
 color = Color(0.8645581, 0.18017665, 0.3196495, 1)
 energy = 0.77
 shadow_enabled = true
-texture = SubResource("GradientTexture2D_g4v7s")
+texture = ExtResource("1_k23jb")

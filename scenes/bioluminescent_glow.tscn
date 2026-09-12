@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://c02vk2trinfbl"]
+
+[ext_resource type="Texture2D" uid="uid://ithhdugh85g0" path="res://assets/textures/bioluminescent_glow_texture.tres" id="1_4vb33"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_rcxcw"]
+blend_mode = 1
+light_mode = 1
+
+[node name="Sprite2D" type="Sprite2D" unique_id=1311156877]
+modulate = Color(0.022300506, 0.27199247, 0.2690732, 0.32156864)
+material = SubResource("CanvasItemMaterial_rcxcw")
+texture = ExtResource("1_4vb33")

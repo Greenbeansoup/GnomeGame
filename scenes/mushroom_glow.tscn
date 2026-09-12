@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://dg7hu6q4y3gi6"]
+
+[ext_resource type="Texture2D" uid="uid://cdvlf6n4wp6db" path="res://assets/textures/mushroom_glow_texture.tres" id="1_ok8tq"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_g4v7s"]
+blend_mode = 1
+light_mode = 1
+
+[node name="Sprite2D" type="Sprite2D" unique_id=1761843727]
+modulate = Color(0.43425736, 0.07048946, 0.14575179, 0.50980395)
+material = SubResource("CanvasItemMaterial_g4v7s")
+texture = ExtResource("1_ok8tq")

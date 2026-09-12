@@ -6,5 +6,5 @@ func _ready():
 
 
 func _on_body_entered(body: Node2D):
-	if body is CharacterBody2D:
-		get_tree().reload_current_scene()
+	if body.has_method("request_level_restart"):
+		body.request_level_restart()
