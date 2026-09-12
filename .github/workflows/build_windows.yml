@@ -55,7 +55,54 @@ jobs:
           name: windows-build
           path: ${{ steps.export.outputs.build_directory }}
 
-      # Step 5: Attach the build to a GitHub Release (only when a tag is pushed)
+      - name: Verify Windows Build
+        env:
+          WINDOWS_BUILD_DIRECTORY: ${{ steps.export.outputs.build_directory }}/Windows Desktop
+        run: test -f "$WINDOWS_BUILD_DIRECTORY/gnome_platformer_demo_v0.03.exe"
+
+      - name: Set Up Butler
+        uses: remarkablegames/setup-butler@v3
+
+      - name: Publish Windows Build to Itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCHIO_USERNAME: ${{ vars.ITCHIO_USERNAME || secrets.ITCHIO_USERNAME }}
+          ITCHIO_GAME: ${{ vars.ITCHIO_GAME || secrets.ITCHIO_GAME }}
+          WINDOWS_BUILD_DIRECTORY: ${{ steps.export.outputs.build_directory }}/Windows Desktop
+        run: |
+          if [[ -z "$BUTLER_API_KEY" ]]; then
+            echo "::error::BUTLER_API_KEY is not configured as a repository secret."
+            exit 1
+          fi
+          if [[ -z "$ITCHIO_USERNAME" ]]; then
+            echo "::error::ITCHIO_USERNAME is not configured as a repository variable or secret."
+            exit 1
+          fi
+          if [[ -z "$ITCHIO_GAME" ]]; then
+            echo "::error::ITCHIO_GAME is not configured as a repository variable or secret."
+            exit 1
+          fi
+          if [[ "$ITCHIO_USERNAME" == *"/"* || "$ITCHIO_GAME" == *"/"* ]]; then
+            echo "::error::Use only the itch.io username and game URL slug, not a URL or path."
+            exit 1
+          fi
+
+          itch_projects=$(curl --fail-with-body --silent --show-error \
+            --header "Authorization: Bearer $BUTLER_API_KEY" \
+            https://api.itch.io/profile/games)
+          itch_target="$ITCHIO_USERNAME.itch.io/$ITCHIO_GAME"
+          if ! jq --exit-status --arg target "$itch_target" '
+            (.games // []) | any(.[];
+              (.url | sub("^https?://"; "") | ascii_downcase) == ($target | ascii_downcase)
+            )
+          ' <<<"$itch_projects" > /dev/null; then
+            echo "::error::The configured itch.io project is not accessible to this API key. Verify its URL slug and ensure the key belongs to its owner or an editor."
+            exit 1
+          fi
+
+          butler push "$WINDOWS_BUILD_DIRECTORY" "$ITCHIO_USERNAME/$ITCHIO_GAME:windows"
+
+      # Attach the build to a GitHub Release (only when a tag is pushed)
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: ncipollo/release-action@v1
