@@ -1,10 +1,10 @@
 [gd_scene format=4 uid="uid://b03448nirv1po"]
 
 [ext_resource type="Script" uid="uid://c4q3vrally4bv" path="res://scripts/sprinter_boss.gd" id="1_wjbkg"]
-[ext_resource type="Script" uid="uid://bb0t2ovl7wifo" path="res://addons/beehave/nodes/beehave_tree.gd" id="2_i3umu"]
-[ext_resource type="Script" uid="uid://cw22yurt5l74k" path="res://addons/beehave/nodes/composites/selector_reactive.gd" id="3_reactive"]
+[ext_resource type="Script" uid="uid://g3ymptea3lch" path="res://addons/beehave/nodes/beehave_tree.gd" id="2_i3umu"]
+[ext_resource type="Script" uid="uid://c654as83nhwql" path="res://addons/beehave/nodes/composites/selector_reactive.gd" id="3_reactive"]
 [ext_resource type="Script" uid="uid://p5xxbs5ctove" path="res://scripts/behaviors/player_in_range_behavior.gd" id="4_srmfu"]
-[ext_resource type="Script" uid="uid://cg016dbe7gs1x" path="res://addons/beehave/nodes/composites/sequence.gd" id="5_23tw0"]
+[ext_resource type="Script" uid="uid://d1rif0ec5eh4g" path="res://addons/beehave/nodes/composites/sequence.gd" id="5_23tw0"]
 [ext_resource type="Script" uid="uid://7l4nklklcye0" path="res://scripts/behaviors/move_to_player_behavior.gd" id="6_cabuo"]
 [ext_resource type="Script" uid="uid://bnmnyi4odhmam" path="res://scripts/behaviors/wind_up_behavior.gd" id="7_4otcf"]
 [ext_resource type="Script" uid="uid://5jcwjgslmx7n" path="res://scripts/behaviors/spot_player_behavior.gd" id="7_veapx"]
@@ -264,7 +264,7 @@ position = Vector2(0, -63)
 texture = SubResource("PortableCompressedTexture2D_y3i08")
 hframes = 6
 vframes = 6
-frame = 23
+frame = 27
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
 }
@@ -294,7 +294,7 @@ libraries/ = SubResource("AnimationLibrary_boss")
 [node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("blackboard", "actor")]
 script = ExtResource("2_i3umu")
 actor_node_path = NodePath("..")
-blackboard = NodePath("@Node@24231")
+blackboard = NodePath("@Node@30519")
 actor = NodePath("..")
 
 [node name="SelectorReactiveComposite" type="Node" parent="BeehaveTree" unique_id=2141388327]

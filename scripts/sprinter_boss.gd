@@ -10,6 +10,7 @@ extends CharacterBody2D
 @export_range(1.0, 200.0, 1.0) var attack_range := 65.0
 @export_range(1.0, 1000.0, 1.0) var pursuit_range := 150.0
 @export_range(0.0, 1000.0, 1.0) var chase_speed := 195.0
+@export_range(1.0, 500.0, 1.0) var chase_resume_distance := 48.0
 @export var attack_push_velocity := Vector2(320.0, -180.0)
 @export_range(0.0, 5.0, 0.05) var attack_recovery_time := 0.4
 
@@ -35,6 +36,7 @@ var windup_animation_finished := false
 var attack_animation_finished := false
 var attack_hit_players: Array[Node] = []
 var attack_recovery_timer := 0.0
+var is_holding_chase_position := false
 
 const DEBUG_AI := false
 
@@ -289,11 +291,20 @@ func chase_player(player: Node2D) -> void:
 
 	var dx := player.global_position.x - global_position.x
 	var underfoot_buffer := _get_body_half_width() + FACING_FLIP_BUFFER
+	var resume_distance := maxf(chase_resume_distance, underfoot_buffer)
+	if is_holding_chase_position:
+		is_holding_chase_position = absf(dx) < resume_distance
+	elif absf(dx) <= underfoot_buffer:
+		is_holding_chase_position = true
+
 	if dx * facing_direction < -underfoot_buffer:
 		facing_direction = signf(dx)
 
-	velocity.x = 0.0 if absf(dx) <= underfoot_buffer else facing_direction * chase_speed
-	if current_animation != "running":
+	velocity.x = 0.0 if is_holding_chase_position else facing_direction * chase_speed
+	if is_holding_chase_position:
+		if current_animation != "idleactive":
+			play_animation("idleactive")
+	elif current_animation != "running":
 		play_animation("running")
 	_apply_facing(facing_direction)
 
