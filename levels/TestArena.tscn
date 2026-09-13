@@ -7,6 +7,9 @@
 [ext_resource type="Script" uid="uid://hwymia3hycr" path="res://scripts/camera_controller.gd" id="4_3gsd2"]
 [ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="5_o3wng"]
 [ext_resource type="PackedScene" uid="uid://b03448nirv1po" path="res://scenes/sprinter_boss.tscn" id="6_0j3m5"]
+[ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="8_blbwx"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_3gsd2"]
 
 [node name="TestArena" type="Node2D" unique_id=1534865992]
 
@@ -35,3 +38,11 @@ grid_coords = Vector2i(0, -1)
 [node name="SprinterRat" parent="." unique_id=1888432503 instance=ExtResource("6_0j3m5")]
 position = Vector2(370, 0)
 attack_range = 56.0
+
+[node name="Area2D" type="Area2D" parent="." unique_id=764424240]
+position = Vector2(-3, 0)
+script = ExtResource("8_blbwx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1553125061]
+position = Vector2(-4, 167)
+shape = SubResource("WorldBoundaryShape2D_3gsd2")

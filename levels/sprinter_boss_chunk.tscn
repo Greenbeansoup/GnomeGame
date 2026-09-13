@@ -7,8 +7,11 @@
 [ext_resource type="PackedScene" uid="uid://dg7hu6q4y3gi6" path="res://scenes/mushroom_glow.tscn" id="5_oylcg"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_rv6sv"]
 [ext_resource type="FontFile" uid="uid://b1gbvxr5lgyi1" path="res://assets/fonts/PixelOperator8.ttf" id="10_8jxp8"]
+[ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="10_oylcg"]
 [ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="11_a7hn6"]
 [ext_resource type="PackedScene" uid="uid://b03448nirv1po" path="res://scenes/sprinter_boss.tscn" id="12_a8yvm"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_h0j78"]
 
 [node name="SprinterBossChunk" type="Node2D" unique_id=605025223]
 script = ExtResource("1_131ip")
@@ -50,3 +53,11 @@ grid_coords = Vector2i(1, -4)
 position = Vector2(733, -1088)
 attack_range = 56.0
 chase_speed = 191.0
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1547345444]
+position = Vector2(-3, 0)
+script = ExtResource("10_oylcg")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1922006307]
+position = Vector2(954, 2)
+shape = SubResource("WorldBoundaryShape2D_h0j78")
