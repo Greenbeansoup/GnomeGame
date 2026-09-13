@@ -40,6 +40,8 @@ var is_holding_chase_position := false
 
 const DEBUG_AI := false
 
+var idle_active_playback_speed := 0.5
+
 func log_ai(msg: String) -> void:
 	if DEBUG_AI:
 		print("[AI %s] %s" % [name, msg])
@@ -303,7 +305,7 @@ func chase_player(player: Node2D) -> void:
 	velocity.x = 0.0 if is_holding_chase_position else facing_direction * chase_speed
 	if is_holding_chase_position:
 		if current_animation != "idleactive":
-			play_animation("idleactive")
+			play_animation("idleactive", idle_active_playback_speed)
 	elif current_animation != "running":
 		play_animation("running")
 	_apply_facing(facing_direction)
