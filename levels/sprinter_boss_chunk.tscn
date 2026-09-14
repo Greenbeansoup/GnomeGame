@@ -39,7 +39,7 @@ zone_size = Vector2(576, 320)
 grid_coords = Vector2i(0, -1)
 
 [node name="SprinterRat" parent="." unique_id=1888432503 instance=ExtResource("12_a8yvm")]
-position = Vector2(397, -64)
+position = Vector2(394, -81)
 attack_range = 56.0
 chase_speed = 191.0
 
