@@ -13,12 +13,18 @@ func tick(actor, blackboard: Blackboard):
 			actor.play_idle_animation()
 		return FAILURE
 
-	var player = blackboard.get_value("player")
-
-	if not is_instance_valid(player):
-		actor.log_ai("MoveToPlayer tick -> FAILURE (player=%s)" % str(player))
+	if blackboard.get_value("is_player_in_detect_area", false):
+		var player = blackboard.get_value("player")
+		if not is_instance_valid(player):
+			actor.log_ai("MoveToPlayer tick -> FAILURE (player=%s)" % str(player))
+			actor.velocity.x = 0.0
+			return FAILURE
+		actor.chase_player(player)
+	elif blackboard.get_value("has_last_known_player_position", false):
+		actor.chase_position(blackboard.get_value("last_known_player_position"))
+	else:
+		actor.log_ai("MoveToPlayer tick -> FAILURE (no last known position)")
 		actor.velocity.x = 0.0
 		return FAILURE
 
-	actor.chase_player(player)
 	return RUNNING

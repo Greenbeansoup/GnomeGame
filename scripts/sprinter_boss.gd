@@ -41,6 +41,7 @@ var is_holding_chase_position := false
 const DEBUG_AI := false
 
 var idle_active_playback_speed := 0.5
+@export var idle_active_flip_detection := false
 
 func log_ai(msg: String) -> void:
 	if DEBUG_AI:
@@ -109,6 +110,8 @@ func _refresh_player_detection() -> void:
 	var player := _get_overlapping_player()
 	if is_instance_valid(player) and _is_player_in_detection_view(player):
 		_set_detected_player(player)
+	elif beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
+		_lose_player_sight()
 	elif not beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false):
 		_clear_detected_player()
 
@@ -120,7 +123,12 @@ func _get_overlapping_player() -> Node2D:
 
 func _is_player_in_detection_view(player: Node2D) -> bool:
 	var horizontal_offset := player.global_position.x - global_position.x
-	return horizontal_offset * facing_direction >= -(_get_body_half_width() + DETECTION_REAR_BUFFER)
+	return horizontal_offset * _get_detection_direction() >= -(_get_body_half_width() + DETECTION_REAR_BUFFER)
+
+func _get_detection_direction() -> float:
+	if current_animation == "idleactive" and idle_active_flip_detection:
+		return -facing_direction
+	return facing_direction
 
 func _get_body_half_width() -> float:
 	return body_collision_shape.shape.get_rect().size.x * 0.5
@@ -129,8 +137,23 @@ func _set_detected_player(player: Node2D) -> void:
 	var was_detected = beehave_tree.blackboard.get_value("is_player_in_detect_area", false)
 	beehave_tree.blackboard.set_value("is_player_in_detect_area", true)
 	beehave_tree.blackboard.set_value("player", player)
+	beehave_tree.blackboard.set_value("last_known_player_position", player.global_position)
+	beehave_tree.blackboard.set_value("has_last_known_player_position", true)
+	forget_timer.stop()
 	if not was_detected:
 		log_ai("DETECT ENTER player=%s" % player.name)
+
+
+func _lose_player_sight() -> void:
+	if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
+		return
+
+	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
+	beehave_tree.blackboard.set_value("is_player_in_pursuit_range", true)
+	beehave_tree.blackboard.set_value("player", null)
+	forget_timer.stop()
+	log_ai("SIGHT LOST (pursuing last known position)")
+
 
 func _clear_detected_player() -> void:
 	var had_target = beehave_tree.blackboard.get_value("is_player_in_detect_area", false) \
@@ -142,6 +165,7 @@ func _clear_detected_player() -> void:
 	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
 	beehave_tree.blackboard.set_value("is_player_in_pursuit_range", false)
 	beehave_tree.blackboard.set_value("player", null)
+	beehave_tree.blackboard.set_value("has_last_known_player_position", false)
 	forget_timer.stop()
 	attack_recovery_timer = 0.0
 	spotted_animation_finished = false
@@ -188,10 +212,10 @@ func _on_player_exited_detect_area(body: Node2D) -> void:
 
 	log_ai("DETECT EXIT raw self=%s player=%s diff=%s" % [global_position, body.global_position, body.global_position - global_position])
 
+	if beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
+		_lose_player_sight()
+		return
 	if beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false):
-		# A chase is active: don't clear the player just because they left this outer
-		# sensor, let the attack-range grace timer decide when to give up instead.
-		log_ai("DETECT EXIT player=%s but chase active, deferring to grace timer" % body.name)
 		return
 
 	_clear_detected_player()
@@ -291,7 +315,11 @@ func chase_player(player: Node2D) -> void:
 	if not is_instance_valid(player):
 		return
 
-	var dx := player.global_position.x - global_position.x
+	chase_position(player.global_position)
+
+
+func chase_position(target_position: Vector2) -> void:
+	var dx := target_position.x - global_position.x
 	var underfoot_buffer := _get_body_half_width() + FACING_FLIP_BUFFER
 	var resume_distance := maxf(chase_resume_distance, underfoot_buffer)
 	if is_holding_chase_position:
@@ -306,6 +334,8 @@ func chase_player(player: Node2D) -> void:
 	if is_holding_chase_position:
 		if current_animation != "idleactive":
 			play_animation("idleactive", idle_active_playback_speed)
+		if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false) and forget_timer.is_stopped():
+			forget_timer.start()
 	elif current_animation != "running":
 		play_animation("running")
 	_apply_facing(facing_direction)
