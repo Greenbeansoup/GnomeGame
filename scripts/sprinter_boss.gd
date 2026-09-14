@@ -11,7 +11,7 @@ extends CharacterBody2D
 @export_range(1.0, 1000.0, 1.0) var pursuit_range := 150.0
 @export_range(0.0, 1000.0, 1.0) var chase_speed := 195.0
 @export_range(1.0, 500.0, 1.0) var chase_resume_distance := 48.0
-@export var attack_push_velocity := Vector2(320.0, -180.0)
+@export var attack_push_velocity := Vector2(420.0, -240.0)
 @export_range(0.0, 5.0, 0.05) var attack_recovery_time := 0.4
 
 var forget_timer: Timer

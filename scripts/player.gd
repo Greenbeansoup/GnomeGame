@@ -33,6 +33,8 @@ const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT - 4.5
 # the physics-shape clamp to nudge the player sideways (see _snap_to_nearest_adjacent_empty_tile).
 const DIG_OUT_DOWN_EXTRA_SIDE_NUDGE = 2.0
 const EXPLOSION_HOLD_DURATION = 0.25
+const CRUSH_HOLD_DURATION = 0.4
+const WALL_SQUASH_PROBE_DISTANCE = 2.0
 const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
 const MUSHROOM_BOUNCE_DEBOUNCE_DURATION = 0.08
 const ATTACK_PUSH_CONTROL_LOCK_DURATION = 0.18
@@ -75,6 +77,7 @@ var log_next_default_movement = false
 var is_sprinting = false
 
 var is_exploding = false
+var is_crushed = false
 var mushroom_bounce_normal = Vector2.ZERO
 var mushroom_bounce_steer_timer = 0.0
 var last_bounced_mushroom: Node2D
@@ -85,6 +88,7 @@ func set_terrain_layers(layers: Array[TileMapLayer], active_layer: TileMapLayer)
 	terrain_layers = layers
 	tile_map_layer = active_layer
 var attack_push_timer = 0.0
+var is_attack_pushed = false
 enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
 # Distinguishes which impact started the current smack/fall cycle, since both share the
@@ -110,10 +114,10 @@ func _physics_process(delta):
 	mushroom_bounce_debounce_timer = maxf(mushroom_bounce_debounce_timer - delta, 0.0)
 	attack_push_timer = maxf(attack_push_timer - delta, 0.0)
 
-	if not is_exploding and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
+	if not is_exploding and not is_crushed and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
 		_start_explosion()
 
-	if is_exploding:
+	if is_exploding or is_crushed:
 		velocity = Vector2.ZERO
 		return
 
@@ -141,6 +145,8 @@ func _physics_process(delta):
 		_check_for_wall_smack(impact_velocity)
 		_check_for_head_smack(impact_velocity)
 		_update_wall_smack_landing()
+		if is_attack_pushed and is_on_floor():
+			is_attack_pushed = false
 
 	# IDLE TIMER LOGIC
 	if player_active or velocity.x != 0 or not is_on_floor():
@@ -706,16 +712,36 @@ func _start_explosion():
 
 
 func squash():
-	if not is_exploding:
-		_start_explosion()
+	if is_exploding or is_crushed:
+		return
+
+	is_crushed = true
+	velocity = Vector2.ZERO
+	animated_sprite_2d.play("crushed")
+
+
+func squash_against_wall(wall_direction: float):
+	if is_exploding or is_crushed:
+		return
+
+	is_crushed = true
+	velocity = Vector2.ZERO
+	animated_sprite_2d.flip_h = wall_direction > 0.0
+	animated_sprite_2d.play("crushedagainstwall")
 
 
 func apply_attack_push(push_velocity: Vector2):
-	if is_exploding:
+	if is_exploding or is_crushed:
+		return
+
+	var push_direction := signf(push_velocity.x)
+	if not is_zero_approx(push_direction) and test_move(global_transform, Vector2.RIGHT * push_direction * WALL_SQUASH_PROBE_DISTANCE):
+		squash_against_wall(push_direction)
 		return
 
 	velocity = push_velocity
 	attack_push_timer = ATTACK_PUSH_CONTROL_LOCK_DURATION
+	is_attack_pushed = true
 
 
 func request_level_restart() -> void:
@@ -728,6 +754,10 @@ func request_level_restart() -> void:
 func _on_animation_finished():
 	if is_exploding and animated_sprite_2d.animation == "explode":
 		await get_tree().create_timer(EXPLOSION_HOLD_DURATION).timeout
+		request_level_restart()
+		return
+	if is_crushed and animated_sprite_2d.animation in [&"crushed", &"crushedagainstwall"]:
+		await get_tree().create_timer(CRUSH_HOLD_DURATION).timeout
 		request_level_restart()
 		return
 
@@ -793,6 +823,10 @@ func _update_animations(direction: float):
 		elif wall_smack_state == WallSmackState.STUNNED:
 			wall_smack_animation = &"stunnedfacedownextended" if smack_trigger == SmackTrigger.WALL_FORWARD else &"stunnedextended"
 		_play_if_different(wall_smack_animation)
+		return
+
+	if is_attack_pushed:
+		_play_if_different(&"spinningclock")
 		return
 
 	if is_ground_pounding:
