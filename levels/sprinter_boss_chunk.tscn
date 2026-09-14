@@ -5,7 +5,6 @@
 [ext_resource type="Script" uid="uid://bobo7tvn4e7wm" path="res://scripts/fantasy_cave_controller.gd" id="3_00al5"]
 [ext_resource type="PackedScene" uid="uid://c02vk2trinfbl" path="res://scenes/bioluminescent_glow.tscn" id="4_0lmpn"]
 [ext_resource type="PackedScene" uid="uid://dg7hu6q4y3gi6" path="res://scenes/mushroom_glow.tscn" id="5_oylcg"]
-[ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_rv6sv"]
 [ext_resource type="FontFile" uid="uid://b1gbvxr5lgyi1" path="res://assets/fonts/PixelOperator8.ttf" id="10_8jxp8"]
 [ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="10_oylcg"]
 [ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="11_a7hn6"]
@@ -24,16 +23,6 @@ script = ExtResource("3_00al5")
 glow_worm_light = ExtResource("4_0lmpn")
 mushroom_light = ExtResource("5_oylcg")
 
-[node name="DigOutHint" parent="." unique_id=1555947086 instance=ExtResource("8_rv6sv")]
-visible = false
-z_index = 1
-offset_left = 93.0
-offset_top = -220.0
-offset_right = 180.0
-offset_bottom = -180.0
-text = "X to Dig Out"
-hint_type = "Dig Out"
-
 [node name="Label" type="Label" parent="." unique_id=698442005]
 offset_left = 400.0
 offset_top = -1104.0
@@ -45,7 +34,7 @@ text = "To be continued..."
 
 [node name="CameraZone3" parent="." unique_id=644106822 instance=ExtResource("11_a7hn6")]
 position = Vector2(624, -1184)
-mode = 1
+mode = 0
 zone_size = Vector2(576, 320)
 grid_coords = Vector2i(1, -4)
 

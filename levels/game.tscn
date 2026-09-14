@@ -21,7 +21,7 @@ position = Vector2(-524, -96)
 color = Color(0.72759295, 0.5936862, 0.73051393, 1)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=794331030]
-position = Vector2(-1100, -95)
+position = Vector2(-1103, -95)
 zoom = Vector2(2, 2)
 position_smoothing_enabled = true
 position_smoothing_speed = 12.0
@@ -63,30 +63,31 @@ metadata/_aseprite_wizard_source_file_hash_ = "62d02773911249d65968f65ca92437b2"
 [node name="ChunkLoader" type="Node2D" parent="." unique_id=1670907364]
 script = ExtResource("15_chunk_loader")
 
-[node name="SprinterBossSlot" type="Node2D" parent="ChunkLoader"]
+[node name="SprinterBossSlot" type="Node2D" parent="ChunkLoader" unique_id=653793039]
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_y7kp8")
-active_rect = Rect2(-239, -1344, 864, 320)
+active_rect = Rect2(335, -1344, 576, 320)
+unload_margin = 576.0
 
-[node name="DiagonalBounceSlot" type="Node2D" parent="ChunkLoader"]
+[node name="DiagonalBounceSlot" type="Node2D" parent="ChunkLoader" unique_id=1682925948]
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_kc1m6")
 active_rect = Rect2(-239, -1024, 576, 320)
 
-[node name="VerticalTutorialSlot" type="Node2D" parent="ChunkLoader"]
+[node name="VerticalTutorialSlot" type="Node2D" parent="ChunkLoader" unique_id=1987524480]
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_arvxu")
 active_rect = Rect2(-239, -704, 576, 768)
 
-[node name="SprintTutorialSlot" type="Node2D" parent="ChunkLoader"]
+[node name="SprintTutorialSlot" type="Node2D" parent="ChunkLoader" unique_id=949663671]
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_vpik0")
 active_rect = Rect2(-815, -256, 576, 320)
 
-[node name="StartSlot" type="Node2D" parent="ChunkLoader"]
+[node name="StartSlot" type="Node2D" parent="ChunkLoader" unique_id=1743813366]
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_cnc74")
 active_rect = Rect2(-1391, -255, 576, 320)
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=337352650]
-position = Vector2(-1306, -75)
+position = Vector2(-1303, -76)

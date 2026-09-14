@@ -59,7 +59,7 @@ text = "X to Dig Out"
 hint_type = "Dig Out"
 
 [node name="CameraZone" parent="." unique_id=1204955279 instance=ExtResource("11_rhb41")]
-position = Vector2(-527, -96)
+position = Vector2(-528, -97)
 mode = 0
 zone_size = Vector2(576, 320)
 grid_coords = Vector2i(-1, -1)
