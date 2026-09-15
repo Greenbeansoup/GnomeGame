@@ -706,9 +706,18 @@ func _is_stopped():
 
 
 func _start_explosion():
+	if is_exploding or is_crushed:
+		return
+
 	is_exploding = true
 	velocity = Vector2.ZERO
 	animated_sprite_2d.play("explode")
+
+
+# Public entry point for hazards (pendulums, enemies, etc.) that deal lethal contact damage.
+# Currently always plays the explode sequence; future hazards can branch on a damage type here.
+func take_damage():
+	_start_explosion()
 
 
 func squash():

@@ -18,13 +18,15 @@ signal chunk_unloaded
 	set(value):
 		active_rect = value
 		queue_redraw()
-@export_range(0.0, 4096.0, 1.0) var preload_margin := 256.0:
+# Per-axis margins let a chunk preload/unload sooner along one axis than the other
+# (e.g. a tall vertical shaft vs. a wide horizontal corridor).
+@export var preload_margin := Vector2(256.0, 256.0):
 	set(value):
-		preload_margin = value
+		preload_margin = value.max(Vector2.ZERO)
 		queue_redraw()
-@export_range(0.0, 4096.0, 1.0) var unload_margin := 512.0:
+@export var unload_margin := Vector2(512.0, 512.0):
 	set(value):
-		unload_margin = value
+		unload_margin = value.max(Vector2.ZERO)
 		queue_redraw()
 @export_category("Editor Preview")
 @export var preview_in_editor := true:
@@ -32,6 +34,10 @@ signal chunk_unloaded
 		preview_in_editor = value
 		if Engine.is_editor_hint() and is_inside_tree():
 			call_deferred("_refresh_editor_preview")
+@export var show_margin_gizmos := true:
+	set(value):
+		show_margin_gizmos = value
+		queue_redraw()
 
 var chunk: Node2D
 var editor_preview: Node2D
@@ -44,11 +50,16 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	if not Engine.is_editor_hint():
+	if not Engine.is_editor_hint() or not show_margin_gizmos:
 		return
 
-	draw_rect(active_rect.grow(preload_margin), Color(0.2, 0.65, 1.0, 0.15), true)
+	draw_rect(_grow_rect(active_rect, unload_margin), Color(1.0, 0.55, 0.15, 0.12), true)
+	draw_rect(_grow_rect(active_rect, preload_margin), Color(0.2, 0.65, 1.0, 0.15), true)
 	draw_rect(active_rect, Color(0.2, 0.65, 1.0, 0.9), false, 2.0)
+
+
+func _grow_rect(rect: Rect2, margin: Vector2) -> Rect2:
+	return rect.grow_individual(margin.x, margin.y, margin.x, margin.y)
 
 
 func _on_chunk_scene_changed() -> void:
@@ -79,8 +90,8 @@ func _refresh_editor_preview() -> void:
 	add_child(editor_preview)
 
 
-func get_world_rect(margin: float = 0.0) -> Rect2:
-	return Rect2(global_position + active_rect.position, active_rect.size).grow(margin)
+func get_world_rect(margin: Vector2 = Vector2.ZERO) -> Rect2:
+	return _grow_rect(Rect2(global_position + active_rect.position, active_rect.size), margin)
 
 
 func is_loaded() -> bool:

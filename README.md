@@ -38,7 +38,7 @@ To create a chunk:
 2. Add terrain, camera zones, enemies, hazards, lighting, and local environment art beneath that root.
 3. Add each terrain layer the player can dig through to the root's `terrain_layer_paths`. Put the primary layer first.
 4. Add a `Node2D` beneath `Game/ChunkLoader`, attach `scripts/chunk_slot.gd`, and assign the chunk scene.
-5. Position the slot where the chunk belongs and set `active_rect` to the chunk's playable world area. The blue editor rectangle previews it; `preload_margin` loads ahead of the player and `unload_margin` prevents rapid unload/reload at an edge.
+5. Position the slot where the chunk belongs and set `active_rect` to the chunk's playable world area. The blue editor rectangle previews it; `preload_margin` (blue) loads ahead of the player and `unload_margin` (orange) prevents rapid unload/reload at an edge. Both margins are `Vector2`s, so the x and y axes can be tuned independently.
 
 Chunk roots must remain at local `(0, 0)` inside their scenes. Use the `ChunkSlot` position to place the complete chunk in the world. Neighboring slots should have enough preload overlap that terrain and lights are ready before the player crosses between them.
 
