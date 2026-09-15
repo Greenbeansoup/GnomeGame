@@ -12,7 +12,6 @@ func _ready():
 	bounce_light.enabled = false
 
 func _on_animation_finished():
-	print("Setting bounce light false")
 	if animated_sprite_2d.animation == "Bounce":
 		animated_sprite_2d.play("Default")
 		bounce_light.enabled = false

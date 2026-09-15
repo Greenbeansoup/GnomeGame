@@ -35,9 +35,6 @@ func _spawn_lights_on_tiles() -> void:
 				_create_light_at_position(cell_pos, mushroom_light, LightBias.BOTTOM)
 				lights_spawned += 1
 
-	print("_spawn_lights_on_tiles finished: ", get_used_cells().size(), " cells scanned, ", lights_spawned, " lights spawned")
-
-
 func _create_light_at_position(cell_pos: Vector2i, light: PackedScene, bias: LightBias) -> void:
 	# Instantiate your custom light resource or scene
 	var new_light = light.instantiate()
