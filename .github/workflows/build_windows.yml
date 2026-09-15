@@ -58,7 +58,7 @@ jobs:
       - name: Verify Windows Build
         env:
           WINDOWS_BUILD_DIRECTORY: ${{ steps.export.outputs.build_directory }}/Windows Desktop
-        run: test -f "$WINDOWS_BUILD_DIRECTORY/gnome_platformer_demo_v0.03.exe"
+        run: test -f "$WINDOWS_BUILD_DIRECTORY/gnome_platformer.exe"
 
       - name: Set Up Butler
         uses: remarkablegames/setup-butler@v3
