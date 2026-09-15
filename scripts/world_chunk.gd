@@ -5,6 +5,11 @@ class_name WorldChunk
 @export var terrain_layer_paths: Array[NodePath] = []
 
 
+# Chunks may define their own respawn point via a child Marker2D named "PlayerSpawn".
+func get_player_spawn() -> Marker2D:
+	return find_child("PlayerSpawn", true, false) as Marker2D
+
+
 func get_terrain_layers() -> Array[TileMapLayer]:
 	var terrain_layers: Array[TileMapLayer] = []
 	for terrain_path in terrain_layer_paths:

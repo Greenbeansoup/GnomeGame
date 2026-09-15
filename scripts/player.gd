@@ -34,6 +34,9 @@ const DIG_OUT_DOWN_VISUAL_OFFSET = GNOME_FRAME_HEIGHT - 4.5
 const DIG_OUT_DOWN_EXTRA_SIDE_NUDGE = 2.0
 const EXPLOSION_HOLD_DURATION = 0.25
 const CRUSH_HOLD_DURATION = 0.4
+# Grace period after respawning so a hazard still overlapping the spawn point (e.g. a
+# reloaded chunk's pendulum mid-swing) can't immediately kill the player again.
+const RESPAWN_INVULNERABILITY_DURATION = 0.5
 const WALL_SQUASH_PROBE_DISTANCE = 2.0
 const MUSHROOM_BOUNCE_STEER_DURATION = 0.1
 const MUSHROOM_BOUNCE_DEBOUNCE_DURATION = 0.08
@@ -82,6 +85,7 @@ var mushroom_bounce_normal = Vector2.ZERO
 var mushroom_bounce_steer_timer = 0.0
 var last_bounced_mushroom: Node2D
 var mushroom_bounce_debounce_timer = 0.0
+var respawn_invulnerability_timer = 0.0
 
 
 func set_terrain_layers(layers: Array[TileMapLayer], active_layer: TileMapLayer) -> void:
@@ -113,6 +117,7 @@ func _physics_process(delta):
 	var direction = 0.0
 	mushroom_bounce_debounce_timer = maxf(mushroom_bounce_debounce_timer - delta, 0.0)
 	attack_push_timer = maxf(attack_push_timer - delta, 0.0)
+	respawn_invulnerability_timer = maxf(respawn_invulnerability_timer - delta, 0.0)
 
 	if not is_exploding and not is_crushed and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
 		_start_explosion()
@@ -706,11 +711,14 @@ func _is_stopped():
 
 
 func _start_explosion():
-	if is_exploding or is_crushed:
+	if is_exploding or is_crushed or respawn_invulnerability_timer > 0.0:
 		return
 
 	is_exploding = true
 	velocity = Vector2.ZERO
+	# Prevents a hazard from re-triggering death while the explode animation is still playing.
+	if collision_shape_2d:
+		collision_shape_2d.disabled = true
 	animated_sprite_2d.play("explode")
 
 
@@ -721,7 +729,7 @@ func take_damage():
 
 
 func squash():
-	if is_exploding or is_crushed:
+	if is_exploding or is_crushed or respawn_invulnerability_timer > 0.0:
 		return
 
 	is_crushed = true
@@ -730,7 +738,7 @@ func squash():
 
 
 func squash_against_wall(wall_direction: float):
-	if is_exploding or is_crushed:
+	if is_exploding or is_crushed or respawn_invulnerability_timer > 0.0:
 		return
 
 	is_crushed = true
@@ -755,11 +763,37 @@ func apply_attack_push(push_velocity: Vector2):
 
 func request_level_restart() -> void:
 	var game_manager := get_tree().get_first_node_in_group("game_manager")
-	if game_manager and game_manager.has_method("restart_current_level"):
+	if game_manager and game_manager.has_method("respawn_player"):
+		game_manager.call_deferred("respawn_player")
+	elif game_manager and game_manager.has_method("restart_current_level"):
 		game_manager.call_deferred("restart_current_level")
 	else:
 		get_tree().call_deferred("reload_current_scene")
-	
+
+
+# Resets death/movement-lock state and teleports to a checkpoint, without touching the
+# rest of the level (camera, chunk loader), used by the game manager's respawn path.
+func respawn_at(spawn_position: Vector2) -> void:
+	is_exploding = false
+	is_crushed = false
+	is_digging = false
+	is_digging_out = false
+	is_earthwalking = false
+	movement_mode = MovementMode.DEFAULT
+	is_ground_pounding = false
+	is_attack_pushed = false
+	attack_push_timer = 0.0
+	wall_smack_state = WallSmackState.NONE
+	velocity = Vector2.ZERO
+	respawn_invulnerability_timer = RESPAWN_INVULNERABILITY_DURATION
+	if collision_shape_2d:
+		collision_shape_2d.disabled = false
+	animated_sprite_2d.rotation = 0.0
+	animated_sprite_2d.position = sprite_rest_position
+	global_position = spawn_position
+	animated_sprite_2d.play("idle")
+
+
 func _on_animation_finished():
 	if is_exploding and animated_sprite_2d.animation == "explode":
 		await get_tree().create_timer(EXPLOSION_HOLD_DURATION).timeout

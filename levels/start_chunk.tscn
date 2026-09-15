@@ -43,5 +43,5 @@ mode = 0
 zone_size = Vector2(576, 320)
 grid_coords = Vector2i(0, -1)
 
-[node name="SpawnPoint" type="Marker2D" parent="." unique_id=1892486036]
+[node name="PlayerSpawn" type="Marker2D" parent="." unique_id=1892486036]
 position = Vector2(84, -144)

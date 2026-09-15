@@ -7,9 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://dg7hu6q4y3gi6" path="res://scenes/mushroom_glow.tscn" id="5_06i52"]
 [ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="7_jmw0c"]
 [ext_resource type="PackedScene" uid="uid://nurqpk2yg2pi" path="res://scenes/pendulum.tscn" id="8_jsupn"]
-[ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="9_tuc6m"]
-
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_h0j78"]
 
 [node name="SprinterBossChunk" type="Node2D" unique_id=605025223]
 script = ExtResource("1_ig7ix")
@@ -28,14 +25,9 @@ mode = 0
 zone_size = Vector2(576, 320)
 grid_coords = Vector2i(0, -1)
 
-[node name="Area2D" type="Area2D" parent="." unique_id=1547345444]
-position = Vector2(-334, 1006)
-script = ExtResource("9_tuc6m")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1922006307]
-position = Vector2(954, 2)
-shape = SubResource("WorldBoundaryShape2D_h0j78")
-
 [node name="Pendulum" parent="." unique_id=391897024 instance=ExtResource("8_jsupn")]
 position = Vector2(289, -207)
 swing_angle = 65.0
+
+[node name="PlayerSpawn" type="Marker2D" parent="." unique_id=785945602]
+position = Vector2(27, -93)

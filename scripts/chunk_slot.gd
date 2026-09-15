@@ -4,6 +4,7 @@ class_name ChunkSlot
 
 signal chunk_loaded(chunk: Node2D)
 signal chunk_unloaded
+signal player_entered(body: Node)
 
 @export var chunk_scene: PackedScene:
 	set(value):
@@ -18,6 +19,7 @@ signal chunk_unloaded
 	set(value):
 		active_rect = value
 		queue_redraw()
+		_update_entry_area_shape()
 # Per-axis margins let a chunk preload/unload sooner along one axis than the other
 # (e.g. a tall vertical shaft vs. a wide horizontal corridor).
 @export var preload_margin := Vector2(256.0, 256.0):
@@ -41,12 +43,44 @@ signal chunk_unloaded
 
 var chunk: Node2D
 var editor_preview: Node2D
+var _entry_area: Area2D
 
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		call_deferred("_refresh_editor_preview")
 		queue_redraw()
+	else:
+		_setup_entry_area()
+
+
+# Detects the player crossing into this slot's bounds via a physics signal instead of a
+# per-frame position check across every slot.
+func _setup_entry_area() -> void:
+	_entry_area = Area2D.new()
+	_entry_area.monitorable = false
+	add_child(_entry_area)
+
+	var collision_shape := CollisionShape2D.new()
+	collision_shape.shape = RectangleShape2D.new()
+	_entry_area.add_child(collision_shape)
+	_update_entry_area_shape()
+
+	_entry_area.body_entered.connect(_on_entry_area_body_entered)
+
+
+func _update_entry_area_shape() -> void:
+	if not is_instance_valid(_entry_area):
+		return
+
+	var collision_shape := _entry_area.get_child(0) as CollisionShape2D
+	collision_shape.shape.size = active_rect.size
+	collision_shape.position = active_rect.position + active_rect.size / 2.0
+
+
+func _on_entry_area_body_entered(body: Node) -> void:
+	if body.is_in_group("player"):
+		player_entered.emit(body)
 
 
 func _draw() -> void:

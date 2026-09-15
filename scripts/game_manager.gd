@@ -11,6 +11,10 @@ extends Node2D
 @onready var current_scene_holder = $CurrentScene
 
 var current_level_scene: PackedScene
+# The last PlayerSpawn marker a chunk reported the player reaching; survives level
+# restarts (death/respawn) but resets whenever a level is started fresh.
+var last_spawn_position: Vector2
+var has_last_spawn := false
 
 func _ready():
 	add_to_group("game_manager")
@@ -38,6 +42,7 @@ func _unhandled_input(event: InputEvent):
 
 func show_main_menu():
 	current_level_scene = null
+	has_last_spawn = false
 	# Clear out the temporary menus, but the PauseMenu is safe!
 	_clear_children(menu_holder) 
 	_clear_children(current_scene_holder)
@@ -68,6 +73,7 @@ func _on_main_menu_pressed():
 
 func start_level(level_scene: PackedScene):
 	current_level_scene = level_scene
+	has_last_spawn = false
 	# Remove the main menu
 	_clear_children(menu_holder)
 	_replace_current_level()
@@ -79,10 +85,38 @@ func restart_current_level():
 	pause_menu.hide()
 	_replace_current_level()
 
+
+# Death/respawn path: keeps the current level (camera, chunk loader) intact instead of
+# rebuilding the whole scene, so the camera doesn't snap back to the level's start.
+func respawn_player() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		restart_current_level()
+		return
+
+	var spawn_position := get_spawn_position(player.global_position)
+	# Move the player away first so a recreated hazard/enemy doesn't immediately
+	# re-detect them still standing at the death position.
+	if player.has_method("respawn_at"):
+		player.respawn_at(spawn_position)
+	var chunk_loader = get_tree().get_first_node_in_group("chunk_loader")
+	if chunk_loader and chunk_loader.has_method("reload_active_chunks"):
+		chunk_loader.reload_active_chunks()
+
+
 func _replace_current_level():
 	_clear_children(current_scene_holder)
 	var level := current_level_scene.instantiate()
 	current_scene_holder.add_child(level)
+
+
+func set_last_spawn(spawn_position: Vector2) -> void:
+	last_spawn_position = spawn_position
+	has_last_spawn = true
+
+
+func get_spawn_position(default_position: Vector2) -> Vector2:
+	return last_spawn_position if has_last_spawn else default_position
 
 func _clear_children(target_node: Node):
 	for child in target_node.get_children():
