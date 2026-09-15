@@ -1,0 +1,106 @@
+[gd_scene format=4 uid="uid://nurqpk2yg2pi"]
+
+[ext_resource type="Script" uid="uid://cq11ci6f7g60l" path="res://scripts/pendulum.gd" id="1_301do"]
+[ext_resource type="Script" uid="uid://bqcqcukdf4k7g" path="res://scripts/pendulum_arm.gd" id="1_wbf35"]
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_wbf35"]
+_data = PackedByteArray("AAADAAUAAAABAAAAMAAAADAAAABsAAAAUklGRmQAAABXRUJQVlA4TFgAAAAvL8ALEBcwICMyNPMfgAdGsW2neSlIiJ9IKP3QvugHBaDO/yOgu4j+TwAqSpZA1Ush0QfJrJJVAFbLVgsA3ccWzao19uGyJTP0DedCiqGi5aMSckek8SsD")
+size_override = Vector2(48, 48)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_yf5fn"]
+radius = 3.0
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_301do"]
+_data = PackedByteArray("AAADAAUAAAABAAAAgAAAAIAAAACiAQAAUklGRpoBAABXRUJQVlA4TI0BAAAvf8AfEEegJpIUNviBVNKjBjMBk6wHJxdoFvsn8VbSRhKcHbho8d6DT8wJCIr8Hy0AAN+efBsLoFVW1t+DJNW240j6GOUCvohuaL1snONYgQSfcA5zDe0CjODPM6vKC5fkAv3qG4jo/wTQN/4RuLI1Xp+HHztcn/FXT5yuz4v7n0cu5r+4Ys0Z0kK/Y1ITO7k2/7TFljOjNbW2fvfU3GooV3Q2Qy0yG2vu541yMdOfG1ELdT9vuTZ/t6LW1BmQIrfmQvqL2lpdd3F1RHmDPhBFdT1lfRBRVQWARXUVyTr3VU4A7t8BLFr2FLWK2tPbJRfqekMDeLpkC1Ol/nQxMGH7k/SHr31brKEvyjoVnjkwcyjudKauAMAnYYBlFwBg6SoWPgkDAMsuFK4nAoC026Ga0g4AqOsR8CKh5kWChSQ7NJPs7DAb8+kUvk/UADMaQ3deJKDqRUJ/I5B2u1pKOwDUO+CTcMGyC8BgAD4JAyy7AAsjAM8cmDkAAPU/YjtZ3DaYoC0DGW0NZLcY6NsOAA==")
+size_override = Vector2(128, 128)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
+size = Vector2(11, 102)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_yf5fn"]
+radius = 12.0
+height = 38.0
+
+[node name="Pendulum" type="Node2D" unique_id=391897024]
+script = ExtResource("1_301do")
+
+[node name="PendulumAnchor" type="StaticBody2D" parent="." unique_id=1436205956]
+z_index = 1
+position = Vector2(0, -1)
+
+[node name="BaseSprite" type="Sprite2D" parent="PendulumAnchor" unique_id=761529864]
+texture_filter = 1
+position = Vector2(0, 24)
+texture = SubResource("PortableCompressedTexture2D_wbf35")
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"convert_fps_field": 60.0,
+"convert_ms_field": 16.0,
+"convert_to_fps": false,
+"embed_tex": true,
+"i_mode": 1,
+"keep_anim_length": false,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"player": "",
+"scale": "1.0",
+"slice": "",
+"source": "res://assets/sprites/PendulumBase.aseprite",
+"source_uid": 2240922506572036802
+}
+metadata/_aseprite_wizard_source_file_hash_ = "a7eb6f2814e4c47ce7c9358503f99c02"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PendulumAnchor" unique_id=1030365450]
+position = Vector2(0, 3)
+shape = SubResource("CircleShape2D_yf5fn")
+
+[node name="PinJoint2D" type="PinJoint2D" parent="." unique_id=994171170]
+node_a = NodePath("../PendulumAnchor")
+node_b = NodePath("../PendulumArm")
+
+[node name="PendulumArm" type="RigidBody2D" parent="." unique_id=554091285]
+freeze = true
+freeze_mode = 1
+script = ExtResource("1_wbf35")
+
+[node name="Pendulum" type="Sprite2D" parent="PendulumArm" unique_id=971274533]
+texture_filter = 1
+position = Vector2(0, 5)
+texture = SubResource("PortableCompressedTexture2D_301do")
+offset = Vector2(0, 60)
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"convert_fps_field": 60.0,
+"convert_ms_field": 16.0,
+"convert_to_fps": false,
+"embed_tex": true,
+"i_mode": 1,
+"keep_anim_length": false,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"player": "AnimationPlayer",
+"scale": "1.0",
+"slice": "",
+"source": "res://assets/sprites/Pendulum.aseprite",
+"source_uid": 980207049294060764
+}
+metadata/_aseprite_wizard_source_file_hash_ = "57963b1d2edc035adaf8e95fbf1e54a0"
+
+[node name="PendulumArm" type="CollisionShape2D" parent="PendulumArm" unique_id=2098923315]
+position = Vector2(-0.5, 51)
+shape = SubResource("RectangleShape2D_g4v7s")
+
+[node name="PendulumHead" type="CollisionShape2D" parent="PendulumArm" unique_id=2051877600]
+position = Vector2(0, 114)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_yf5fn")

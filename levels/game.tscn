@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://6pe0ukemcnqb" path="res://levels/diagonal_bounce_column_chunk.tscn" id="6_kc1m6"]
 [ext_resource type="PackedScene" uid="uid://dk2eu0n71nq2m" path="res://levels/sprint_tutorial_chunk.tscn" id="6_vpik0"]
 [ext_resource type="PackedScene" uid="uid://dvjlj1liu3ntq" path="res://levels/sprinter_boss_chunk.tscn" id="6_y7kp8"]
+[ext_resource type="PackedScene" uid="uid://dsksf5pf36guc" path="res://levels/pendulum_chunk.tscn" id="12_5ycdb"]
 [ext_resource type="Script" uid="uid://ckvc4nn3ywi1n" path="res://scripts/chunk_loader.gd" id="15_chunk_loader"]
 [ext_resource type="Script" uid="uid://8unsjw0k4bny" path="res://scripts/chunk_slot.gd" id="16_chunk_slot"]
 
@@ -64,7 +65,7 @@ metadata/_aseprite_wizard_source_file_hash_ = "62d02773911249d65968f65ca92437b2"
 script = ExtResource("15_chunk_loader")
 
 [node name="SprinterBossSlot" type="Node2D" parent="ChunkLoader" unique_id=653793039]
-position = Vector2(1728, -1072)
+position = Vector2(2304, -1072)
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_y7kp8")
 active_rect = Rect2(0, -320, 576, 320)
@@ -93,5 +94,12 @@ script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_cnc74")
 active_rect = Rect2(0, -320, 576, 320)
 
+[node name="PendulumChunk" type="Node2D" parent="ChunkLoader" unique_id=493631254]
+position = Vector2(1728, -1072)
+script = ExtResource("16_chunk_slot")
+chunk_scene = ExtResource("12_5ycdb")
+active_rect = Rect2(0, -324, 576, 324)
+metadata/_custom_type_script = "uid://8unsjw0k4bny"
+
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=337352650]
-position = Vector2(84, -144)
+position = Vector2(1796, -1184)
