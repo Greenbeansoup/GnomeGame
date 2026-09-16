@@ -64,6 +64,7 @@ node_a = NodePath("../PendulumAnchor")
 node_b = NodePath("../PendulumArm")
 
 [node name="PendulumArm" type="RigidBody2D" parent="." unique_id=554091285]
+rotation = 0.65728575
 freeze = true
 freeze_mode = 1
 script = ExtResource("1_wbf35")
@@ -97,10 +98,12 @@ metadata/_aseprite_wizard_config_ = {
 metadata/_aseprite_wizard_source_file_hash_ = "57963b1d2edc035adaf8e95fbf1e54a0"
 
 [node name="PendulumArm" type="CollisionShape2D" parent="PendulumArm" unique_id=2098923315]
+visible = false
 position = Vector2(-0.5, 51)
 shape = SubResource("RectangleShape2D_g4v7s")
 
 [node name="PendulumHead" type="CollisionShape2D" parent="PendulumArm" unique_id=2051877600]
+visible = false
 position = Vector2(0, 114)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_yf5fn")

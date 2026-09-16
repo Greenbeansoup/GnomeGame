@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://dk2eu0n71nq2m" path="res://levels/sprint_tutorial_chunk.tscn" id="6_vpik0"]
 [ext_resource type="PackedScene" uid="uid://dvjlj1liu3ntq" path="res://levels/sprinter_boss_chunk.tscn" id="6_y7kp8"]
 [ext_resource type="PackedScene" uid="uid://dsksf5pf36guc" path="res://levels/pendulum_chunk.tscn" id="12_5ycdb"]
+[ext_resource type="PackedScene" uid="uid://c2tynombxr45w" path="res://levels/post_sprinter_boss_chunk.tscn" id="13_yyd14"]
 [ext_resource type="Script" uid="uid://ckvc4nn3ywi1n" path="res://scripts/chunk_loader.gd" id="15_chunk_loader"]
 [ext_resource type="Script" uid="uid://8unsjw0k4bny" path="res://scripts/chunk_slot.gd" id="16_chunk_slot"]
 
@@ -33,8 +34,8 @@ z_index = -5
 
 [node name="Sprite2D" type="Sprite2D" parent="Parallax2D" unique_id=319405126]
 texture_filter = 1
-position = Vector2(1536.3751, -1119.8322)
-scale = Vector2(13.364257, 11.1869955)
+position = Vector2(1999.0002, -950)
+scale = Vector2(18.637695, 15.601303)
 texture = ExtResource("1_iywne")
 metadata/_aseprite_wizard_interface_config_ = {
 "layer_section": true,
@@ -75,7 +76,7 @@ unload_margin = Vector2(1200, 320)
 position = Vector2(1152, -768)
 script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("6_kc1m6")
-active_rect = Rect2(0, -320, 576, 320)
+active_rect = Rect2(0, -768, 576, 768)
 show_margin_gizmos = false
 
 [node name="VerticalTutorialSlot" type="Node2D" parent="ChunkLoader" unique_id=1987524480]
@@ -104,6 +105,13 @@ script = ExtResource("16_chunk_slot")
 chunk_scene = ExtResource("12_5ycdb")
 active_rect = Rect2(0, -324, 576, 324)
 show_margin_gizmos = false
+metadata/_custom_type_script = "uid://8unsjw0k4bny"
+
+[node name="ChunkSlot" type="Node2D" parent="ChunkLoader" unique_id=1182101644]
+position = Vector2(2880, -1072)
+script = ExtResource("16_chunk_slot")
+chunk_scene = ExtResource("13_yyd14")
+active_rect = Rect2(0, -320, 576, 320)
 metadata/_custom_type_script = "uid://8unsjw0k4bny"
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=337352650]

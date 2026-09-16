@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://ch4bugfk7vxh5"]
+
+[ext_resource type="Script" uid="uid://bye6e52atixxy" path="res://scripts/world_chunk.gd" id="1_wcbase"]
+[ext_resource type="TileSet" uid="uid://dt84hx3xs1ddi" path="res://assets/tilesets/fantasy_cave_tileset.tres" id="2_wcbase"]
+[ext_resource type="Script" uid="uid://bobo7tvn4e7wm" path="res://scripts/fantasy_cave_controller.gd" id="3_wcbase"]
+[ext_resource type="PackedScene" uid="uid://c02vk2trinfbl" path="res://scenes/bioluminescent_glow.tscn" id="4_wcbase"]
+[ext_resource type="PackedScene" uid="uid://dg7hu6q4y3gi6" path="res://scenes/mushroom_glow.tscn" id="5_wcbase"]
+[ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="6_wcbase"]
+
+[node name="BaseChunk2" type="Node2D" unique_id=1253615360]
+script = ExtResource("1_wcbase")
+terrain_layer_paths = Array[NodePath]([NodePath("TileMapLayer")])
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=235103394]
+tile_set = ExtResource("2_wcbase")
+script = ExtResource("3_wcbase")
+glow_worm_light = ExtResource("4_wcbase")
+mushroom_light = ExtResource("5_wcbase")
+
+[node name="CameraZone" parent="." unique_id=1829138595 instance=ExtResource("6_wcbase")]
+position = Vector2(288, -160)
+mode = 0
+zone_size = Vector2(576, 320)
+grid_coords = Vector2i(0, -1)
