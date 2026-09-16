@@ -2,7 +2,6 @@
 
 [ext_resource type="PackedScene" path="res://levels/base_chunk.tscn" id="1_basechunk"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_lh7y0"]
-[ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="11_6v5rd"]
 
 [node name="StartChunk" instance=ExtResource("1_basechunk")]
 
@@ -28,9 +27,8 @@ offset_bottom = -180.0
 text = "X to Dig Out"
 hint_type = "Dig Out"
 
-[node name="CameraZone4" parent="." unique_id=1796895084 instance=ExtResource("11_6v5rd")]
+[node name="CameraZone" parent="."]
 position = Vector2(288, -160)
-mode = 0
 zone_size = Vector2(576, 320)
 grid_coords = Vector2i(0, -1)
 

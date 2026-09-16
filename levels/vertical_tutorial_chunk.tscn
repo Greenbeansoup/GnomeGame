@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" uid="uid://e070owcud22m" path="res://scenes/BigMushroom.tscn" id="6_glbag"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_1qu8p"]
 [ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="9_vx5is"]
-[ext_resource type="PackedScene" uid="uid://cmksib8t1golr" path="res://scenes/CameraZone.tscn" id="11_es36i"]
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_chunk"]
 
@@ -73,7 +72,7 @@ script = ExtResource("9_vx5is")
 position = Vector2(-4, 167)
 shape = SubResource("WorldBoundaryShape2D_chunk")
 
-[node name="CameraZone2" parent="." unique_id=1533183256 instance=ExtResource("11_es36i")]
+[node name="CameraZone" parent="."]
 position = Vector2(288, -385)
 mode = 1
 zone_size = Vector2(576, 768)
