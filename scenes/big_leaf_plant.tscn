@@ -1,0 +1,34 @@
+[gd_scene format=4 uid="uid://dbmu6ql4db2ow"]
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_8nuwb"]
+_data = PackedByteArray("AAADAAUAAAABAAAAgAAAAIAAAACEAgAAUklGRnwCAABXRUJQVlA4THACAAAvf8AfEB8gJCBT1qjWEBIQqgn+r9QEJIQLdvg/T81/AK6qHuQ42+Y2Dg0CAkgHVo4HiDeI4imcOlUOgg8xgA7gLic6CdrhQuPQbdBP+AJuF65cbRhuYGkMif8rNv1/59BE9H8Cov/QgUylKhmIVay1yFUo2BnHCp2D88gUUMOqVAjEFrkCMcHO+gqAQ2mhUsJ5nUUuLWKxCGg5lDoLM3bbGkTEzmdSTd7tOIc6iAFdjZLbOheqgK5F3co12B3a1kl1RAHgti2DnAcxgmMh0DSAmFiqAiwDoUbNsQxxiR9AizYIgS3n2F0LUfBtzntkIg1RQO53OSnLwLgBQLmMtQF4EjVinatr4EVUNSCW2akd8KLJIwCxCAJ5vADiTggIxHgRkEV5JIoQwLAbyCLZCtaDH7/YQC42pcCjF9b1hRo3dYzRXOkhhZoAM+dYqkO5R+0RS1ne1VoxCgHXzEZdeiEQt5Qa31rOhErApcaHWchFKnjAJWaVOfRF4Bj4kDSrYMsyu4tkaZVQQqQBEBVXyBM8Yok956/QT9BUxb2Ec3RCoX0LN5tmYo9SlB1mXm6QdvY3ccjFJqkZrsN5hRNmuIIdJ/egb+49Y1AQu3PV3HvwHWjFJsEMJ0caQGE0LJKokVvxo/GHNIo6uZ29KrFnNLJFGilO+JvSs/Sz0iT9bH8pmXGTaH3WScx4Sa1TWUrMGKmGS8x4SaXsmXGhUS32qnGRaHCvWShSnc9hoNFwr2OdWQoMTihULgWKvkI0SRsqrqokZjgIattKnwY7sc5cwZlGz9j5NFIp7k5V7OUHt96fUzCfzk+sPalxc25i7U2FP/E=")
+size_override = Vector2(128, 128)
+
+[node name="BigLeafPlant" type="Node2D" unique_id=131496999]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1689948165]
+texture_filter = 1
+position = Vector2(0, -52)
+texture = SubResource("PortableCompressedTexture2D_8nuwb")
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"convert_fps_field": 60.0,
+"convert_ms_field": 16.0,
+"convert_to_fps": false,
+"embed_tex": true,
+"i_mode": 1,
+"keep_anim_length": false,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"player": "",
+"scale": "1.0",
+"slice": "",
+"source": "res://assets/sprites/Bigleafplant.aseprite",
+"source_uid": 6645045757476184405
+}
+metadata/_aseprite_wizard_source_file_hash_ = "1b66a08033c3e391de27c9ef986db9a0"
