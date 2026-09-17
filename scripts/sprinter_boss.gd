@@ -149,7 +149,6 @@ func _lose_player_sight() -> void:
 		return
 
 	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
-	beehave_tree.blackboard.set_value("is_player_in_pursuit_range", true)
 	beehave_tree.blackboard.set_value("player", null)
 	forget_timer.stop()
 	log_ai("SIGHT LOST (pursuing last known position)")
