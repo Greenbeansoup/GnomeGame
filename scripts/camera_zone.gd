@@ -10,7 +10,10 @@ const ROOM_HEIGHT: float = 324.0
 
 # STATIC: camera snaps once to this zone's position and stays put.
 # FOLLOW: camera tracks the player continuously until they leave this zone.
-enum Mode { STATIC, FOLLOW }
+# ZOOM_OUT: camera follows the player and zooms out to fill the zone as the player's
+#   distance to the nearest edge allows; zoom only ever decreases while the zone is active.
+# ZOOM: like ZOOM_OUT, but zoom also comes back in as the player nears an edge again.
+enum Mode { STATIC, FOLLOW, ZOOM_OUT, ZOOM }
 @export var mode: Mode = Mode.STATIC
 
 # Size of the detection area, editable per-instance so reused zones can be made

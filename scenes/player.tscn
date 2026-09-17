@@ -782,3 +782,5 @@ occluder = SubResource("OccluderPolygon2D_g4v7s")
 
 [node name="PointLight2D" parent="." unique_id=115023313 instance=ExtResource("2_g2els")]
 position = Vector2(0, -3)
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=1284797909]

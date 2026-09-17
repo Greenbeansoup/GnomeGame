@@ -4,12 +4,15 @@ extends Node2D
 
 @export var player_scene: PackedScene
 
+@export var jump_sounds: Array[AudioStream] = []
+
 func _ready():
 	# 1. Create an instance of the player
-	var player = player_scene.instantiate() as CharacterBody2D
+	var player = player_scene.instantiate() as Player
 	
 	# 2. Position the player at the last chunk spawn point reached, or this level's default
 	player.global_position = _get_spawn_position()
+	player.jump_sounds = jump_sounds
 	
 	# 3. Add the player to the level
 	add_child(player)

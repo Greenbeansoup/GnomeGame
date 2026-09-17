@@ -1,7 +1,9 @@
-extends CharacterBody2D
+class_name Player extends CharacterBody2D
 
 @onready var animated_sprite_2d = $AnimatedSprite2D
 @onready var collision_shape_2d = $CollisionShape2D
+@onready var audio_stream_player_2d = $AudioStreamPlayer2D
+
 @export var tile_map_layer: TileMapLayer
 var terrain_layers: Array[TileMapLayer] = []
 
@@ -9,6 +11,8 @@ var terrain_layers: Array[TileMapLayer] = []
 @export var sprint_unlocked: bool = true
 @export var earthwalk_unlocked: bool = true
 @export var ground_pound_unlocked: bool = true
+
+@export var jump_sounds : Array[AudioStream] = []
 
 const SPEED = 130.0
 const SPRINT_SPEED = SPEED * 1.5
@@ -203,6 +207,7 @@ func _process_default_movement(delta):
 	if Input.is_action_just_pressed("jump") and (is_on_floor() or coyote_timer < coyote_time):
 		velocity.y = JUMP_VELOCITY
 		player_active = true
+		_play_random_sound(jump_sounds)
 
 	# 2b. HANDLE GROUND POUND (airborne only, can't be canceled once started)
 	if ground_pound_unlocked and not is_ground_pounding and not is_on_floor() and Input.is_action_just_pressed("ground_pound"):
@@ -909,3 +914,12 @@ func _update_animations(direction: float):
 				_play_if_different(&"default")
 	else:
 		_play_if_different(&"jumping" if velocity.y < 0 else &"falling")
+		
+func _play_random_sound(sound_variants: Array[AudioStream]):
+	if sound_variants.size() == 0:
+		return
+		
+	var random_index = randi() % sound_variants.size()
+	
+	audio_stream_player_2d.stream = sound_variants[random_index]
+	audio_stream_player_2d.play()
