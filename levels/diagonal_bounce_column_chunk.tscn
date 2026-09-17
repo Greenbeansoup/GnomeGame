@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://ch4bugfk7vxh5" path="res://levels/base_chunk.tscn" id="1_basechunk"]
 [ext_resource type="PackedScene" uid="uid://dbmu6ql4db2ow" path="res://scenes/big_leaf_plant.tscn" id="2_6tfiq"]
+[ext_resource type="PackedScene" uid="uid://c8sewwhbcqi0d" path="res://scenes/fireflies.tscn" id="5_6kbw6"]
 [ext_resource type="PackedScene" uid="uid://e070owcud22m" path="res://scenes/BigMushroom.tscn" id="6_0tper"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_t3ej7"]
 
@@ -65,3 +66,6 @@ hint_type = "Dig Out"
 
 [node name="PlayerSpawn" type="Marker2D" parent="." index="11" unique_id=440574589]
 position = Vector2(232, -32)
+
+[node name="Fireflies" parent="." index="12" unique_id=1495861811 instance=ExtResource("5_6kbw6")]
+position = Vector2(539, -379)
