@@ -378,7 +378,7 @@ metadata/push = true
 collision_layer = 0
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="AggroSightCone" unique_id=741649608]
-polygon = PackedVector2Array(1, -52, -83, 148, -258, 87, -304, -1, -302, -86, -245, -168, -103, -226)
+polygon = PackedVector2Array(1, -52, -65, 134, -269, 102, -329, 4, -332, -86, -257, -189, -72, -225)
 
 [node name="LineOfSight" type="RayCast2D" parent="." unique_id=1800980488]
 position = Vector2(-5, -53)
