@@ -13,6 +13,9 @@ extends CharacterBody2D
 @export_range(1.0, 500.0, 1.0) var chase_resume_distance := 48.0
 @export var attack_push_velocity := Vector2(420.0, -240.0)
 @export_range(0.0, 5.0, 0.05) var attack_recovery_time := 0.4
+@export var keep_chunks_alive := true
+@export var keep_alive_group := &"chunk_keep_alive"
+@export var ignore_home_chunk_keep_alive := true
 
 var forget_timer: Timer
 
@@ -48,6 +51,9 @@ func log_ai(msg: String) -> void:
 		print("[AI %s] %s" % [name, msg])
 
 func _ready():
+	if keep_chunks_alive:
+		add_to_group(keep_alive_group)
+
 	play_idle_animation()
 	animation_player.animation_finished.connect(_on_animation_finished)
 	

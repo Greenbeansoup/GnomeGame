@@ -2,9 +2,13 @@ extends Node2D
 class_name ChunkLoader
 
 @export var player_path: NodePath
+@export var keep_alive_groups: Array[StringName] = [&"chunk_keep_alive"]
 
 var player: CharacterBody2D
 var active_slot: Node2D
+
+const KEEP_ALIVE_HOME_SLOT_META := &"chunk_loader_home_slot"
+const IGNORE_HOME_KEEP_ALIVE_PROPERTY := &"ignore_home_chunk_keep_alive"
 
 
 func _ready() -> void:
@@ -12,6 +16,8 @@ func _ready() -> void:
 	for child in get_children():
 		if child.has_signal("player_entered"):
 			child.player_entered.connect(_on_slot_player_entered.bind(child))
+		if child.has_signal("chunk_loaded"):
+			child.chunk_loaded.connect(_on_slot_chunk_loaded_for_keep_alive.bind(child))
 
 
 # Resets any currently streamed-in chunks (hazards, pickups, etc.) without touching
@@ -56,13 +62,73 @@ func _update_loaded_chunks() -> void:
 		var slot = child
 
 		if slot.is_loaded():
-			if not slot.get_world_rect(slot.unload_margin).has_point(player.global_position):
+			if not _is_slot_kept_alive(slot):
 				if slot == active_slot and player.get("is_earthwalking") == true:
 					continue
 				slot.unload_chunk()
 		else:
 			if slot.get_world_rect(slot.preload_margin).has_point(player.global_position):
 				slot.load_chunk()
+
+
+func _is_slot_kept_alive(slot: Node2D) -> bool:
+	var unload_rect: Rect2 = slot.get_world_rect(slot.unload_margin)
+	if unload_rect.has_point(player.global_position):
+		return true
+
+	for tracked_entity in _get_keep_alive_entities():
+		if not unload_rect.has_point(tracked_entity.global_position):
+			continue
+		if _should_ignore_home_slot_keep_alive(tracked_entity, slot):
+			continue
+		return true
+
+	return false
+
+
+func _get_keep_alive_entities() -> Array[Node2D]:
+	var entities: Array[Node2D] = []
+	var seen := {}
+	for group_name in keep_alive_groups:
+		for entity in get_tree().get_nodes_in_group(group_name):
+			if seen.has(entity):
+				continue
+			seen[entity] = true
+			if entity.is_queued_for_deletion():
+				continue
+			if entity is Node2D:
+				entities.append(entity)
+
+	return entities
+
+
+func _should_ignore_home_slot_keep_alive(entity: Node2D, slot: Node2D) -> bool:
+	if _get_home_slot(entity) != slot:
+		return false
+
+	return entity.get(IGNORE_HOME_KEEP_ALIVE_PROPERTY) == true
+
+
+func _get_home_slot(entity: Node2D) -> Node2D:
+	var home_slot := entity.get_meta(KEEP_ALIVE_HOME_SLOT_META, null) as Node2D
+	if is_instance_valid(home_slot):
+		return home_slot
+
+	for child in get_children():
+		if not child.has_method("load_chunk") or not child.is_loaded():
+			continue
+		var slot := child as Node2D
+		if slot.chunk and slot.chunk.is_ancestor_of(entity):
+			entity.set_meta(KEEP_ALIVE_HOME_SLOT_META, slot)
+			return slot
+
+	return null
+
+
+func _on_slot_chunk_loaded_for_keep_alive(chunk: Node2D, slot: Node2D) -> void:
+	for entity in _get_keep_alive_entities():
+		if chunk.is_ancestor_of(entity):
+			entity.set_meta(KEEP_ALIVE_HOME_SLOT_META, slot)
 
 
 func _update_player_terrain() -> void:
