@@ -318,7 +318,7 @@ libraries/ = SubResource("AnimationLibrary_boss")
 [node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("blackboard", "actor")]
 script = ExtResource("2_i3umu")
 actor_node_path = NodePath("..")
-blackboard = NodePath("@Node@25367")
+blackboard = NodePath("@Node@44713")
 actor = NodePath("..")
 
 [node name="SelectorReactiveComposite" type="Node" parent="BeehaveTree" unique_id=2141388327]
@@ -373,3 +373,12 @@ position = Vector2(56, -47.000004)
 rotation = 0.43300396
 shape = SubResource("RectangleShape2D_yf5fn")
 metadata/push = true
+
+[node name="AggroSightCone" type="Area2D" parent="." unique_id=240391184]
+collision_layer = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="AggroSightCone" unique_id=741649608]
+polygon = PackedVector2Array(1, -52, -83, 148, -258, 87, -304, -1, -302, -86, -245, -168, -103, -226)
+
+[node name="LineOfSight" type="RayCast2D" parent="." unique_id=1800980488]
+position = Vector2(-5, -53)

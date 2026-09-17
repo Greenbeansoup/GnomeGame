@@ -2,7 +2,9 @@ extends CharacterBody2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var beehave_tree = $BeehaveTree
-@onready var detect_area = $DetectArea
+@onready var detect_area: Area2D = $DetectArea
+@onready var aggro_sight_cone: Area2D = $AggroSightCone
+@onready var line_of_sight: RayCast2D = $LineOfSight
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var hammer_collider: Area2D = $HammerCollider
 @onready var hammer_collision_shape: CollisionShape2D = $HammerCollider/CollisionShape2D
@@ -87,7 +89,8 @@ func can_attack_player(player: Node2D) -> bool:
 
 	var offset := player.global_position - global_position
 	return attack_recovery_timer <= 0.0 \
-		and detect_area.overlaps_body(player) \
+		and beehave_tree.blackboard.get_value("is_player_in_detect_area", false) \
+		and beehave_tree.blackboard.get_value("player") == player \
 		and offset.length() <= attack_range \
 		and offset.x * facing_direction > 0.0
 
@@ -113,19 +116,45 @@ func _process_attack_hits() -> void:
 			body.squash()
 
 func _refresh_player_detection() -> void:
-	var player := _get_overlapping_player()
-	if is_instance_valid(player) and _is_player_in_detection_view(player):
+	_update_aggro_sight_facing()
+	var player := _get_visible_player_candidate()
+	if is_instance_valid(player) and _can_see_player(player):
 		_set_detected_player(player)
 	elif beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
 		_lose_player_sight()
 	elif not beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false):
 		_clear_detected_player()
 
-func _get_overlapping_player() -> Node2D:
-	for body in detect_area.get_overlapping_bodies():
+
+func _get_visible_player_candidate() -> Node2D:
+	var sight_area := aggro_sight_cone if _uses_aggro_sight() else detect_area
+	for body in sight_area.get_overlapping_bodies():
 		if body is Node2D and body.is_in_group("player"):
 			return body
 	return null
+
+
+func _can_see_player(player: Node2D) -> bool:
+	if not _uses_aggro_sight():
+		return _is_player_in_detection_view(player)
+
+	var target_position := player.global_position
+	var player_collision := player.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if player_collision:
+		target_position = player_collision.global_position
+	line_of_sight.target_position = line_of_sight.to_local(target_position)
+	line_of_sight.force_raycast_update()
+	return line_of_sight.is_colliding() and line_of_sight.get_collider() == player
+
+
+func _uses_aggro_sight() -> bool:
+	return beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false) \
+		or current_animation == "idleactive"
+
+
+func _update_aggro_sight_facing() -> void:
+	aggro_sight_cone.scale.x = -_get_detection_direction()
+
 
 func _is_player_in_detection_view(player: Node2D) -> bool:
 	var horizontal_offset := player.global_position.x - global_position.x
@@ -181,8 +210,6 @@ func _clear_detected_player() -> void:
 	log_ai("DETECT CLEARED (player outside facing view)")
 
 func _update_pursuit_range() -> void:
-	# Pursuit is a distance check against the single DetectArea's tracked
-	# player, rather than a second (easy to desync) Area2D.
 	if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
 		return
 
@@ -192,9 +219,7 @@ func _update_pursuit_range() -> void:
 
 	var distance = absf(player.global_position.x - global_position.x)
 	var was_in_pursuit_range = beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false)
-	# X-distance alone isn't enough: the player can be horizontally close but have
-	# dropped out of DetectArea's actual (vertically limited) shape entirely.
-	var in_range = distance <= pursuit_range and detect_area.overlaps_body(player)
+	var in_range := true if _uses_aggro_sight() else distance <= pursuit_range and detect_area.overlaps_body(player)
 
 	if in_range:
 		if not was_in_pursuit_range:
@@ -208,11 +233,11 @@ func _update_pursuit_range() -> void:
 		forget_timer.start()
 
 func _on_player_entered_detect_area(body: Node2D) -> void:
-	if body.is_in_group("player") and _is_player_in_detection_view(body):
+	if not _uses_aggro_sight() and body.is_in_group("player") and _is_player_in_detection_view(body):
 		_set_detected_player(body)
 
 func _on_player_exited_detect_area(body: Node2D) -> void:
-	if not body.is_in_group("player"):
+	if not body.is_in_group("player") or _uses_aggro_sight():
 		return
 
 	log_ai("DETECT EXIT raw self=%s player=%s diff=%s" % [global_position, body.global_position, body.global_position - global_position])
