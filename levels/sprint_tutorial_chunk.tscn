@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://ch4bugfk7vxh5" path="res://levels/base_chunk.tscn" id="1_basechunk"]
 [ext_resource type="PackedScene" uid="uid://dbmu6ql4db2ow" path="res://scenes/big_leaf_plant.tscn" id="4_hpwvy"]
+[ext_resource type="PackedScene" uid="uid://dxewagk0u1h3g" path="res://scenes/water_dripper.tscn" id="5_wwdxu"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_s8elh"]
 [ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="9_t54r7"]
 
@@ -53,3 +54,6 @@ shape = SubResource("WorldBoundaryShape2D_mmhc2")
 
 [node name="PlayerSpawn" type="Marker2D" parent="." index="7" unique_id=939496942]
 position = Vector2(38, -75)
+
+[node name="WaterDripper" parent="." index="8" unique_id=524471414 instance=ExtResource("5_wwdxu")]
+position = Vector2(169, -141)

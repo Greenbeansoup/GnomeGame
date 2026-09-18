@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dxewagk0u1h3g"]
+
+[node name="WaterDripper" type="Node2D" unique_id=524471414]
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="." unique_id=1737548145]
+amount = 1
+lifetime = 5.0
+randomness = 1.0
+lifetime_randomness = 0.5
+color = Color(0, 0.33333334, 0.7529412, 1)

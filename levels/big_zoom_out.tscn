@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://ch4bugfk7vxh5" path="res://levels/base_chunk.tscn" id="1_pvvsl"]
 [ext_resource type="PackedScene" uid="uid://dbmu6ql4db2ow" path="res://scenes/big_leaf_plant.tscn" id="2_5p501"]
 [ext_resource type="FontFile" uid="uid://b1gbvxr5lgyi1" path="res://assets/fonts/PixelOperator8.ttf" id="3_jrhs5"]
+[ext_resource type="PackedScene" uid="uid://dxewagk0u1h3g" path="res://scenes/water_dripper.tscn" id="4_ktdu4"]
 
 [node name="BigZoomOut" unique_id=1253615360 instance=ExtResource("1_pvvsl")]
 
@@ -29,3 +30,12 @@ offset_bottom = -275.0
 theme_override_fonts/font = ExtResource("3_jrhs5")
 theme_override_font_sizes/font_size = 8
 text = "To be continued..."
+
+[node name="WaterDripper" parent="." index="5" unique_id=524471414 instance=ExtResource("4_ktdu4")]
+position = Vector2(200, -528)
+
+[node name="WaterDripper2" parent="." index="6" unique_id=642518187 instance=ExtResource("4_ktdu4")]
+position = Vector2(449, -549)
+
+[node name="WaterDripper3" parent="." index="7" unique_id=379683590 instance=ExtResource("4_ktdu4")]
+position = Vector2(824, -496)

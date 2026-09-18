@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://ch4bugfk7vxh5" path="res://levels/base_chunk.tscn" id="1_basechunk"]
 [ext_resource type="PackedScene" uid="uid://c8sewwhbcqi0d" path="res://scenes/fireflies.tscn" id="5_uc358"]
 [ext_resource type="PackedScene" uid="uid://e070owcud22m" path="res://scenes/BigMushroom.tscn" id="6_glbag"]
+[ext_resource type="PackedScene" uid="uid://dxewagk0u1h3g" path="res://scenes/water_dripper.tscn" id="6_krsn5"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_1qu8p"]
 [ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="9_vx5is"]
 
@@ -80,3 +81,6 @@ shape = SubResource("WorldBoundaryShape2D_chunk")
 
 [node name="Fireflies" parent="." index="13" unique_id=1495861811 instance=ExtResource("5_uc358")]
 position = Vector2(366, -236)
+
+[node name="WaterDripper" parent="." index="14" unique_id=524471414 instance=ExtResource("6_krsn5")]
+position = Vector2(303, -672)
