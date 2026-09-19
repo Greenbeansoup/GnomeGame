@@ -1,0 +1,71 @@
+[gd_scene format=4 uid="uid://1j65414545jo"]
+
+[ext_resource type="Script" uid="uid://copvwmqp8c0ow" path="res://scripts/gnome_legs.gd" id="1_idn6i"]
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_qhqgy"]
+_data = PackedByteArray("AAADAAUAAAABAAAAEAAAABAAAAAwAAAAUklGRigAAABXRUJQVlA4TBsAAAAvD8ADEA8ww+M+mvMf8BALJt848zfJIKL/kQsA")
+size_override = Vector2(16, 16)
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_idn6i"]
+_data = PackedByteArray("AAADAAUAAAABAAAAEAAAABAAAAA6AAAAUklGRjIAAABXRUJQVlA4TCYAAAAvD8ADEBcwKFM0PAKCIv9HC8APBBIQjPDHCHlmtQMR/U/cvNIKAQ==")
+size_override = Vector2(16, 16)
+
+[node name="GnomeLegs" type="Node2D" unique_id=1009146300]
+script = ExtResource("1_idn6i")
+
+[node name="LegsSprite" type="Sprite2D" parent="." unique_id=489885994]
+texture_filter = 1
+texture_repeat = 1
+position = Vector2(0, -16)
+texture = SubResource("PortableCompressedTexture2D_qhqgy")
+centered = false
+offset = Vector2(-8, 0)
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"convert_fps_field": 60.0,
+"convert_ms_field": 16.0,
+"convert_to_fps": false,
+"embed_tex": true,
+"i_mode": 1,
+"keep_anim_length": false,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"player": "",
+"scale": "1.0",
+"slice": "",
+"source": "res://assets/sprites/gnome_legs.aseprite",
+"source_uid": 2757292257118635961
+}
+metadata/_aseprite_wizard_source_file_hash_ = "c0acf52c5128889f963b4fbc3fe29183"
+
+[node name="ShoesSprite" type="Sprite2D" parent="." unique_id=851528372]
+texture_filter = 1
+position = Vector2(0, -8)
+texture = SubResource("PortableCompressedTexture2D_idn6i")
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"convert_fps_field": 60.0,
+"convert_ms_field": 16.0,
+"convert_to_fps": false,
+"embed_tex": true,
+"i_mode": 1,
+"keep_anim_length": false,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"player": "",
+"scale": "1.0",
+"slice": "",
+"source": "res://assets/sprites/gnome-shoes.aseprite",
+"source_uid": 7663232185189823450
+}
+metadata/_aseprite_wizard_source_file_hash_ = "cb043a4b78c4ef5b31f3ab9a5e0a29cb"

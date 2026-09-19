@@ -7,6 +7,8 @@ class_name Player extends CharacterBody2D
 @export var tile_map_layer: TileMapLayer
 var terrain_layers: Array[TileMapLayer] = []
 
+const GNOME_LEGS_SCENE = preload("res://scenes/gnome_legs.tscn")
+
 # Abilities gated behind these can be unlocked/locked at runtime (e.g. via pickups).
 @export var sprint_unlocked: bool = true
 @export var earthwalk_unlocked: bool = true
@@ -76,7 +78,8 @@ var dig_in_direction: Vector2i
 var has_dig_in_target = false
 
 var is_earthwalking = false
-enum MovementMode { DEFAULT, EARTHWALK }
+var is_long_legs = false
+enum MovementMode { DEFAULT, EARTHWALK, LONG_LEGS }
 var movement_mode = MovementMode.DEFAULT
 var sprite_rest_position: Vector2
 var log_next_default_movement = false
@@ -90,6 +93,7 @@ var mushroom_bounce_steer_timer = 0.0
 var last_bounced_mushroom: Node2D
 var mushroom_bounce_debounce_timer = 0.0
 var respawn_invulnerability_timer = 0.0
+var gnome_legs: Node2D
 
 
 func set_terrain_layers(layers: Array[TileMapLayer], active_layer: TileMapLayer) -> void:
@@ -111,9 +115,23 @@ var coyote_timer = 0.0
 
 func _ready():
 	sprite_rest_position = animated_sprite_2d.position
+	_spawn_gnome_legs()
 	animated_sprite_2d.animation_finished.connect(_on_animation_finished)
 	animated_sprite_2d.sprite_frames.set_animation_speed("jumping", 10.0)
 	animated_sprite_2d.sprite_frames.set_animation_speed("idlesleep", 0.5)
+
+
+func _spawn_gnome_legs() -> void:
+	gnome_legs = GNOME_LEGS_SCENE.instantiate() as Node2D
+	if not gnome_legs:
+		return
+
+	gnome_legs.set("player", self)
+	var legs_parent := get_parent()
+	if legs_parent:
+		legs_parent.call_deferred("add_child", gnome_legs)
+	else:
+		call_deferred("add_child", gnome_legs)
 
 func _physics_process(delta):
 	# Track if the player did any manual action this frame
@@ -123,8 +141,10 @@ func _physics_process(delta):
 	attack_push_timer = maxf(attack_push_timer - delta, 0.0)
 	respawn_invulnerability_timer = maxf(respawn_invulnerability_timer - delta, 0.0)
 
-	if not is_exploding and not is_crushed and not is_earthwalking and movement_mode != MovementMode.EARTHWALK and Input.is_action_just_pressed("explode"):
+	if not is_exploding and not is_crushed and movement_mode == MovementMode.DEFAULT and Input.is_action_just_pressed("explode"):
 		_start_explosion()
+	if not is_exploding and not is_crushed and (movement_mode == MovementMode.DEFAULT or movement_mode == MovementMode.LONG_LEGS) and Input.is_action_just_pressed("stretch"):
+		set_long_legs_mode(not is_long_legs)
 
 	if is_exploding or is_crushed:
 		velocity = Vector2.ZERO
@@ -138,7 +158,9 @@ func _physics_process(delta):
 	# Delegate movement to the appropriate movement system.
 	# Both movement functions return [player_active: bool, direction: float].
 	var movement_result: Array
-	if movement_mode == MovementMode.EARTHWALK or is_earthwalking:
+	if movement_mode == MovementMode.LONG_LEGS or is_long_legs:
+		movement_result = _process_long_legs_movement(delta)
+	elif movement_mode == MovementMode.EARTHWALK or is_earthwalking:
 		movement_result = _process_earthwalking_movement(delta)
 	else:
 		movement_result = _process_default_movement(delta)
@@ -146,7 +168,7 @@ func _physics_process(delta):
 	direction = movement_result[1]
 
 	# MOVE THE CHARACTER
-	# Only use physics-based movement when not earthwalking
+	# Earthwalking moves by directly constraining the player inside tiles; other modes use physics.
 	if not _is_stopped() and not (movement_mode == MovementMode.EARTHWALK or is_earthwalking):
 		var impact_velocity = velocity
 		move_and_slide()
@@ -250,6 +272,28 @@ func _process_default_movement(delta):
 		is_digging = true
 
 	return [player_active, direction]
+
+
+func _process_long_legs_movement(_delta):
+	var directionx = Input.get_axis("left", "right")
+	if directionx != 0.0:
+		animated_sprite_2d.flip_h = directionx < 0.0
+
+	if Input.is_action_just_pressed("jump"):
+		exit_long_legs_mode()
+		velocity.y = JUMP_VELOCITY
+		_play_random_sound(jump_sounds)
+		return [true, 0.0]
+
+	if earthwalk_unlocked and Input.is_action_just_pressed("dig") and _select_dig_in_target():
+		exit_long_legs_mode()
+		is_digging = true
+		return [true, 0.0]
+
+	var directiony = Input.get_axis("up", "down")
+	velocity.x = 0.0
+	velocity.y = directiony * SPEED
+	return [directionx != 0.0 or directiony != 0.0, directiony]
 
 
 func _process_earthwalking_movement(delta):
@@ -400,6 +444,42 @@ func _enter_earthwalking():
 		collision_shape_2d.disabled = true
 
 
+func enter_long_legs_mode() -> void:
+	if not is_on_floor():
+		return
+
+	is_earthwalking = false
+	is_long_legs = true
+	movement_mode = MovementMode.LONG_LEGS
+	is_digging = false
+	is_digging_out = false
+	is_ground_pounding = false
+	is_sprinting = false
+	velocity = Vector2.ZERO
+	animated_sprite_2d.rotation = 0.0
+	animated_sprite_2d.position = sprite_rest_position
+	if collision_shape_2d:
+		collision_shape_2d.disabled = false
+	if gnome_legs and gnome_legs.has_method("activate_tether"):
+		gnome_legs.call("activate_tether", global_position)
+
+
+func exit_long_legs_mode() -> void:
+	is_long_legs = false
+	if movement_mode == MovementMode.LONG_LEGS:
+		movement_mode = MovementMode.DEFAULT
+	velocity = Vector2.ZERO
+	if gnome_legs and gnome_legs.has_method("deactivate_tether"):
+		gnome_legs.call("deactivate_tether")
+
+
+func set_long_legs_mode(enabled: bool) -> void:
+	if enabled:
+		enter_long_legs_mode()
+	else:
+		exit_long_legs_mode()
+
+
 func _begin_exit_earthwalking() -> bool:
 	# Move to the surface before the reverse dig animation begins.
 	if not _snap_to_nearest_adjacent_empty_tile():
@@ -433,10 +513,15 @@ func _select_dig_in_target() -> bool:
 	var local_pos = tile_map_layer.to_local(global_position)
 	var facing_direction = Vector2i.LEFT if animated_sprite_2d.flip_h else Vector2i.RIGHT
 	var held_horizontal_direction = Input.get_axis("left", "right")
+	var held_vertical_direction = Input.get_axis("up", "down")
 	var target_cell: Vector2i
 	var target_direction = Vector2i.DOWN
 
-	if held_horizontal_direction != 0.0 and sign(held_horizontal_direction) == facing_direction.x:
+	if held_vertical_direction < 0.0:
+		var top_position = local_pos + Vector2(0.0, EARTHWALK_SPRITE_MIN.y - 1.0)
+		target_cell = tile_map_layer.local_to_map(top_position)
+		target_direction = Vector2i.UP
+	elif held_horizontal_direction != 0.0 and sign(held_horizontal_direction) == facing_direction.x:
 		# Holding into the direction the player is facing digs sideways into that tile;
 		# the offset samples a point just in front of and slightly above the player's feet.
 		var front_position = local_pos + Vector2(facing_direction.x * 8.0, -5.0)
@@ -445,8 +530,11 @@ func _select_dig_in_target() -> bool:
 	else:
 		target_cell = tile_map_layer.local_to_map(local_pos + Vector2.DOWN)
 		if tile_map_layer.get_cell_source_id(target_cell) == -1:
-			# No tile directly below (e.g. straddling an edge): fall back to whichever
-			# painted neighboring cell is closest to the player.
+			if not is_on_floor():
+				return false
+
+			# No tile directly below while grounded (e.g. straddling an edge): fall back to
+			# whichever painted neighboring cell is closest to the player.
 			var closest_valid_cell = Vector2i.ZERO
 			var shortest_distance = INF
 
@@ -784,7 +872,7 @@ func respawn_at(spawn_position: Vector2) -> void:
 	is_digging = false
 	is_digging_out = false
 	is_earthwalking = false
-	movement_mode = MovementMode.DEFAULT
+	exit_long_legs_mode()
 	is_ground_pounding = false
 	is_attack_pushed = false
 	attack_push_timer = 0.0
@@ -875,6 +963,10 @@ func _update_animations(direction: float):
 
 	if is_attack_pushed:
 		_play_if_different(&"spinningclock")
+		return
+
+	if is_long_legs:
+		_play_if_different(&"stretchup")
 		return
 
 	if is_ground_pounding:
