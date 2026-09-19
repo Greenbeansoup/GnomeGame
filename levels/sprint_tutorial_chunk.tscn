@@ -2,11 +2,9 @@
 
 [ext_resource type="PackedScene" uid="uid://ch4bugfk7vxh5" path="res://levels/base_chunk.tscn" id="1_basechunk"]
 [ext_resource type="PackedScene" uid="uid://dbmu6ql4db2ow" path="res://scenes/big_leaf_plant.tscn" id="4_hpwvy"]
+[ext_resource type="PackedScene" uid="uid://x36eup3uq60" path="res://scenes/kill_zone.tscn" id="4_wwdxu"]
 [ext_resource type="PackedScene" uid="uid://dxewagk0u1h3g" path="res://scenes/water_dripper.tscn" id="5_wwdxu"]
 [ext_resource type="PackedScene" uid="uid://cmmakvlqec8sn" path="res://scenes/hint_box.tscn" id="8_s8elh"]
-[ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="9_t54r7"]
-
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_mmhc2"]
 
 [node name="SprintTutorialChunk" unique_id=752191165 instance=ExtResource("1_basechunk")]
 
@@ -44,13 +42,8 @@ offset_bottom = -180.0
 text = "X to Dig Out"
 hint_type = "Dig Out"
 
-[node name="Area2D" type="Area2D" parent="." index="6" unique_id=646330879]
-position = Vector2(278, -69)
-script = ExtResource("9_t54r7")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" index="0" unique_id=1826216665]
-position = Vector2(-4, 167)
-shape = SubResource("WorldBoundaryShape2D_mmhc2")
+[node name="Area2D" parent="." index="6" unique_id=1798624816 instance=ExtResource("4_wwdxu")]
+position = Vector2(277, 33)
 
 [node name="PlayerSpawn" type="Marker2D" parent="." index="7" unique_id=939496942]
 position = Vector2(38, -75)

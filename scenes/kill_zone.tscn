@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://x36eup3uq60"]
+
+[ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="1_evp7u"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_mmhc2"]
+distance = 1.0
+
+[node name="Area2D" type="Area2D" unique_id=1798624816]
+script = ExtResource("1_evp7u")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=181392098]
+shape = SubResource("WorldBoundaryShape2D_mmhc2")
