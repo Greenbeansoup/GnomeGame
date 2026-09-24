@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://hwymia3hycr" path="res://scripts/camera_controller.gd" id="1_0tnpc"]
 [ext_resource type="Script" uid="uid://bjcuxdpg5c6dk" path="res://scripts/level_manager.gd" id="1_6f163"]
-[ext_resource type="Texture2D" uid="uid://cwh85xd3dw1ee" path="res://assets/sprites/Background.png" id="1_iywne"]
 [ext_resource type="PackedScene" uid="uid://ic735kty8hxt" path="res://scenes/player.tscn" id="1_uwrxv"]
 [ext_resource type="AudioStream" uid="uid://ccghj2u258kve" path="res://assets/sounds/350905__cabled_mess__jump_c_05.wav" id="5_0u5wd"]
 [ext_resource type="PackedScene" uid="uid://dmeo0fsjuf6hh" path="res://levels/vertical_tutorial_chunk.tscn" id="6_arvxu"]
@@ -16,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://dmchlqhor1vg5" path="res://levels/big_zoom_out.tscn" id="15_p0d6h"]
 [ext_resource type="Script" uid="uid://8unsjw0k4bny" path="res://scripts/chunk_slot.gd" id="16_chunk_slot"]
 [ext_resource type="PackedScene" uid="uid://dtxombfgls8rg" path="res://levels/long_long_gap_chunk.tscn" id="16_jkag2"]
+[ext_resource type="PackedScene" uid="uid://d3qkl0jctbds8" path="res://scenes/Background.tscn" id="16_ol2u7"]
 
 [node name="Game" type="Node2D" unique_id=453759244]
 script = ExtResource("1_6f163")
@@ -33,38 +33,8 @@ position_smoothing_enabled = true
 position_smoothing_speed = 12.0
 script = ExtResource("1_0tnpc")
 
-[node name="Parallax2D" type="Parallax2D" parent="." unique_id=1057800305]
-z_index = -5
-
-[node name="Sprite2D" type="Sprite2D" parent="Parallax2D" unique_id=319405126]
-texture_filter = 1
-position = Vector2(1121.3125, -950)
-scale = Vector2(25.49463, 15.601303)
-texture = ExtResource("1_iywne")
-metadata/_aseprite_wizard_interface_config_ = {
-"layer_section": true,
-"output_section": true,
-"pending_changes": {}
-}
-metadata/_aseprite_wizard_config_ = {
-"convert_fps_field": 60.0,
-"convert_ms_field": 16.0,
-"convert_to_fps": false,
-"embed_tex": true,
-"i_mode": 1,
-"keep_anim_length": false,
-"layers": [],
-"o_ex_p": "",
-"o_folder": "",
-"o_name": "",
-"only_visible": false,
-"player": "",
-"scale": "1.0",
-"slice": "",
-"source": "res://assets/sprites/Background dirt 1.aseprite",
-"source_uid": 3216630281708961572
-}
-metadata/_aseprite_wizard_source_file_hash_ = "62d02773911249d65968f65ca92437b2"
+[node name="Background" parent="." unique_id=1345437117 instance=ExtResource("16_ol2u7")]
+z_index = -10
 
 [node name="ChunkLoader" type="Node2D" parent="." unique_id=1670907364]
 script = ExtResource("15_chunk_loader")

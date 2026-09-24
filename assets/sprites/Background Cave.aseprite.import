@@ -1,0 +1,21 @@
+[remap]
+
+importer="aseprite_wizard.plugin.spriteframes"
+type="SpriteFrames"
+uid="uid://oyy7p5xoiip"
+path="res://.godot/imported/Background Cave.aseprite-63ca24a9649afc22b8008edb2b715024.res"
+
+[deps]
+
+source_file="res://assets/sprites/Background Cave.aseprite"
+dest_files=["res://.godot/imported/Background Cave.aseprite-63ca24a9649afc22b8008edb2b715024.res"]
+
+[params]
+
+layer/exclude_layers_pattern=""
+layer/only_visible_layers=false
+sheet/sheet_type="packed"
+sheet/sheet_columns=12
+sheet/frame_padding=0
+sheet/scale=1
+animation/round_fps=true
