@@ -6,6 +6,7 @@ class_name ChunkLoader
 
 var player: CharacterBody2D
 var active_slot: Node2D
+var is_reloading_active_chunks := false
 
 const KEEP_ALIVE_HOME_SLOT_META := &"chunk_loader_home_slot"
 const IGNORE_HOME_KEEP_ALIVE_PROPERTY := &"ignore_home_chunk_keep_alive"
@@ -23,11 +24,25 @@ func _ready() -> void:
 # Resets any currently streamed-in chunks (hazards, pickups, etc.) without touching
 # the rest of the level tree, e.g. camera and chunk loader stay put across a respawn.
 func reload_active_chunks() -> void:
+	if is_reloading_active_chunks:
+		return
+
+	is_reloading_active_chunks = true
+	var active_slots: Array[Node] = []
 	for child in get_children():
 		if not child.has_method("load_chunk") or not child.is_loaded():
 			continue
+		active_slots.append(child)
 		child.unload_chunk()
-		child.load_chunk()
+
+	await get_tree().process_frame
+
+	for slot in active_slots:
+		if is_instance_valid(slot):
+			slot.load_chunk()
+	is_reloading_active_chunks = false
+	if is_instance_valid(player):
+		_update_player_terrain()
 
 
 func set_player(value: CharacterBody2D) -> void:
@@ -37,6 +52,9 @@ func set_player(value: CharacterBody2D) -> void:
 
 
 func _process(_delta: float) -> void:
+	if is_reloading_active_chunks:
+		return
+
 	if not is_instance_valid(player):
 		player = _find_player()
 		if not player:

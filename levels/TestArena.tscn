@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://b03448nirv1po" path="res://scenes/sprinter_boss.tscn" id="6_0j3m5"]
 [ext_resource type="Script" uid="uid://q05langmma1v" path="res://scripts/kill_floor.gd" id="8_blbwx"]
 [ext_resource type="PackedScene" uid="uid://nurqpk2yg2pi" path="res://scenes/pendulum.tscn" id="9_3gsd2"]
+[ext_resource type="PackedScene" uid="uid://d0d8vtfb2khs3" path="res://scenes/pressure_plate.tscn" id="10_o3wng"]
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_3gsd2"]
 
@@ -50,3 +51,9 @@ shape = SubResource("WorldBoundaryShape2D_3gsd2")
 
 [node name="Pendulum" parent="." unique_id=391897024 instance=ExtResource("9_3gsd2")]
 position = Vector2(-263, -127)
+swing_angle = 89.0
+physics_simulation_enabled = true
+physics_trigger_impulse = null
+
+[node name="PressurePlate" parent="." unique_id=388276520 instance=ExtResource("10_o3wng")]
+position = Vector2(-258, 1)

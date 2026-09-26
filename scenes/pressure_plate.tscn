@@ -1,0 +1,72 @@
+[gd_scene format=4 uid="uid://d0d8vtfb2khs3"]
+
+[ext_resource type="Script" uid="uid://jr27h7vaxbv5" path="res://scripts/pressure_plate.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
+size = Vector2(20, 8)
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_ct5vs"]
+_data = PackedByteArray("AAADAAUAAAABAAAAIAAAABAAAABKAAAAUklGRkIAAABXRUJQVlA4TDYAAAAvH8ADEBcgEEhxELMtEEhxCOstEEhxGHM9/wH/ChS1bSSFzJzIRkW2Bbv/iP4n350VAE/eswI=")
+size_override = Vector2(32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xtofl"]
+atlas = SubResource("PortableCompressedTexture2D_ct5vs")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r34r6"]
+atlas = SubResource("PortableCompressedTexture2D_ct5vs")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_gubfq"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xtofl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r34r6")
+}],
+"loop": 0,
+"name": &"pressing",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r34r6")
+}],
+"loop": 0,
+"name": &"standing",
+"speed": 10.0
+}]
+
+[node name="PressurePlate" type="Node2D" unique_id=388276520]
+script = ExtResource("1_script")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1028385975]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=2039438577]
+position = Vector2(0, -4)
+shape = SubResource("RectangleShape2D_g4v7s")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1980149662]
+texture_filter = 1
+position = Vector2(0, -8)
+sprite_frames = SubResource("SpriteFrames_gubfq")
+animation = &"standing"
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"embed_tex": true,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"scale": "1.0",
+"should_round_fps": true,
+"slice": "",
+"source": "res://assets/sprites/pressure_plate.aseprite",
+"source_uid": 7681550465871261939
+}
+metadata/_aseprite_wizard_source_file_hash_ = "0b63861f4a7d5f4b9a28b69b1fbece46"

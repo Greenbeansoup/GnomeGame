@@ -6,8 +6,10 @@ extends CharacterBody2D
 @onready var aggro_sight_cone: Area2D = $AggroSightCone
 @onready var line_of_sight: RayCast2D = $LineOfSight
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var detect_collision_shape: CollisionShape2D = $DetectArea/CollisionShape2D
 @onready var hammer_collider: Area2D = $HammerCollider
 @onready var hammer_collision_shape: CollisionShape2D = $HammerCollider/CollisionShape2D
+@onready var aggro_collision_polygon: CollisionPolygon2D = $AggroSightCone/CollisionPolygon2D
 
 @export_range(1.0, 200.0, 1.0) var attack_range := 65.0
 @export_range(1.0, 1000.0, 1.0) var pursuit_range := 150.0
@@ -15,6 +17,8 @@ extends CharacterBody2D
 @export_range(1.0, 500.0, 1.0) var chase_resume_distance := 48.0
 @export var attack_push_velocity := Vector2(420.0, -240.0)
 @export_range(0.0, 5.0, 0.05) var attack_recovery_time := 0.4
+## How long the boss's behavior tree stays paused while it is pushed by a slow pendulum.
+@export_range(0.05, 1.0, 0.05) var pendulum_push_control_duration := 0.3
 @export var keep_chunks_alive := true
 @export var keep_alive_group := &"chunk_keep_alive"
 @export var ignore_home_chunk_keep_alive := true
@@ -41,7 +45,9 @@ var windup_animation_finished := false
 var attack_animation_finished := false
 var attack_hit_players: Array[Node] = []
 var attack_recovery_timer := 0.0
+var pendulum_push_timer := 0.0
 var is_holding_chase_position := false
+var is_dead := false
 
 const DEBUG_AI := false
 
@@ -72,6 +78,14 @@ func _ready():
 
 func _physics_process(delta):
 	attack_recovery_timer = maxf(attack_recovery_timer - delta, 0.0)
+	if pendulum_push_timer > 0.0:
+		pendulum_push_timer = maxf(pendulum_push_timer - delta, 0.0)
+		if not is_on_floor():
+			velocity += get_gravity() * delta
+		move_and_slide()
+		if is_zero_approx(pendulum_push_timer) and not is_dead:
+			beehave_tree.enabled = true
+		return
 
 	# Add the gravity.
 	if not is_on_floor():
@@ -93,6 +107,14 @@ func can_attack_player(player: Node2D) -> bool:
 		and beehave_tree.blackboard.get_value("player") == player \
 		and offset.length() <= attack_range \
 		and offset.x * facing_direction > 0.0
+
+func apply_attack_push(push_velocity: Vector2) -> void:
+	if is_dead:
+		return
+
+	pendulum_push_timer = pendulum_push_control_duration
+	beehave_tree.enabled = false
+	velocity = push_velocity
 
 func _process_attack_hits() -> void:
 	if current_animation != "attack" or hammer_collision_shape.disabled:
@@ -263,6 +285,32 @@ func _on_forget_timer_timeout() -> void:
 	beehave_tree.blackboard.set_value("is_player_in_pursuit_range", false)
 	velocity.x = 0.0
 	log_ai("FORGET_TIMER timeout (attack flag cleared)")
+
+func take_damage() -> void:
+	die_from_pendulum()
+
+func die_from_pendulum() -> void:
+	if is_dead:
+		return
+
+	is_dead = true
+	velocity = Vector2.ZERO
+	forget_timer.stop()
+	beehave_tree.enabled = false
+	set_physics_process(false)
+
+	body_collision_shape.set_deferred("disabled", true)
+	detect_collision_shape.set_deferred("disabled", true)
+	hammer_collision_shape.set_deferred("disabled", true)
+	aggro_collision_polygon.set_deferred("disabled", true)
+	detect_area.set_deferred("monitoring", false)
+	detect_area.set_deferred("monitorable", false)
+	hammer_collider.set_deferred("monitoring", false)
+	hammer_collider.set_deferred("monitorable", false)
+	aggro_sight_cone.set_deferred("monitoring", false)
+	aggro_sight_cone.set_deferred("monitorable", false)
+	line_of_sight.enabled = false
+	play_animation("kill")
 
 func play_animation(anim_name: String, speed_scale: float = 1.0) -> void:
 	current_animation = anim_name
