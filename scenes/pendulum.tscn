@@ -67,6 +67,12 @@ node_b = NodePath("../PendulumArm")
 rotation = 0.65728575
 freeze = true
 freeze_mode = 1
+collision_layer = 0
+collision_mask = 0
+linear_damp_mode = 1
+linear_damp = 0.0
+angular_damp_mode = 1
+angular_damp = 0.0
 script = ExtResource("1_wbf35")
 
 [node name="Pendulum" type="Sprite2D" parent="PendulumArm" unique_id=971274533]
@@ -104,6 +110,15 @@ shape = SubResource("RectangleShape2D_g4v7s")
 
 [node name="PendulumHead" type="CollisionShape2D" parent="PendulumArm" unique_id=2051877600]
 visible = false
+position = Vector2(0, 114)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_yf5fn")
+
+[node name="DamageArea" type="Area2D" parent="PendulumArm"]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PendulumArm/DamageArea"]
 position = Vector2(0, 114)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_yf5fn")

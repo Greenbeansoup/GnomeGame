@@ -103,4 +103,4 @@ active_rect = Rect2(0, -320, 1152, 320)
 metadata/_custom_type_script = "uid://8unsjw0k4bny"
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=337352650]
-position = Vector2(99, -144)
+position = Vector2(1770, -1178)
