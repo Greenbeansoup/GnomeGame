@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://b5s840jjqm67g" path="res://scripts/main_menu.gd" id="1_2wh52"]
 [ext_resource type="PackedScene" uid="uid://b0gpbuy7ifjnn" path="res://scenes/grandpa_gnome.tscn" id="3_2wh52"]
 [ext_resource type="Texture2D" uid="uid://cwh85xd3dw1ee" path="res://assets/sprites/Background.png" id="4_ow34m"]
+[ext_resource type="AudioStream" uid="uid://bfhv110aetyoi" path="res://assets/sounds/OutsetCavern.wav" id="5_l72w3"]
 
 [node name="MainMenu" type="Control" unique_id=1332447442]
 layout_mode = 3
@@ -72,3 +73,7 @@ grow_horizontal = 2
 theme_override_fonts/font = ExtResource("1_0ykhv")
 theme_override_font_sizes/font_size = 36
 text = "G-nome"
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=107345522]
+stream = ExtResource("5_l72w3")
+autoplay = true
