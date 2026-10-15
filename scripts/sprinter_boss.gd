@@ -15,6 +15,11 @@ extends CharacterBody2D
 @export_range(1.0, 1000.0, 1.0) var pursuit_range := 150.0
 @export_range(0.0, 1000.0, 1.0) var chase_speed := 195.0
 @export_range(1.0, 500.0, 1.0) var chase_resume_distance := 48.0
+@export_range(1.0, 64.0, 1.0) var vault_obstacle_height := 16.0
+@export_range(1.0, 32.0, 1.0) var vault_probe_distance := 12.0
+@export_range(-600.0, -200.0, 10.0) var vault_retry_jump_velocity := -300.0
+@export_range(0.5, 10.0, 0.5) var stuck_pursuit_timeout := 2.0
+@export_range(1.0, 32.0, 1.0) var stuck_pursuit_progress_distance := 4.0
 @export var attack_push_velocity := Vector2(420.0, -240.0)
 @export_range(0.0, 5.0, 0.05) var attack_recovery_time := 0.4
 ## How long the boss's behavior tree stays paused while it is pushed by a slow pendulum.
@@ -26,7 +31,7 @@ extends CharacterBody2D
 var forget_timer: Timer
 
 const SPEED = 100.0
-const JUMP_VELOCITY = -400.0
+const JUMP_VELOCITY = -200.0
 # Extra space beyond the boss body where it stops instead of changing direction.
 const FACING_FLIP_BUFFER = 8.0
 # Extra detection distance behind the boss body, rather than behind its center.
@@ -46,6 +51,11 @@ var attack_animation_finished := false
 var attack_hit_players: Array[Node] = []
 var attack_recovery_timer := 0.0
 var pendulum_push_timer := 0.0
+var blind_pursuit_stuck_timer := 0.0
+var blind_pursuit_last_position := Vector2.ZERO
+var tracking_blind_pursuit_progress := false
+var vault_jump_attempts := 0
+var vault_jump_pending := false
 var is_holding_chase_position := false
 var is_dead := false
 
@@ -101,6 +111,7 @@ func _physics_process(delta):
 
 	_refresh_player_detection()
 	_update_pursuit_range()
+	_update_blind_pursuit_stuck(delta)
 	_process_attack_hits()
 
 	move_and_slide()
@@ -263,6 +274,40 @@ func _update_pursuit_range() -> void:
 		log_ai("PURSUIT RANGE EXIT distance=%.1f (forget_timer started)" % distance)
 		forget_timer.start()
 
+func _update_blind_pursuit_stuck(delta: float) -> void:
+	var blackboard: Blackboard = beehave_tree.blackboard
+	var pursuing_last_known_position: bool = blackboard.get_value("is_player_in_pursuit_range", false) \
+		and not blackboard.get_value("is_player_in_detect_area", false) \
+		and blackboard.get_value("has_last_known_player_position", false) \
+		and not is_holding_chase_position
+	if not pursuing_last_known_position:
+		blind_pursuit_stuck_timer = 0.0
+		tracking_blind_pursuit_progress = false
+		return
+
+	if not tracking_blind_pursuit_progress:
+		blind_pursuit_last_position = global_position
+		tracking_blind_pursuit_progress = true
+		return
+
+	if global_position.distance_to(blind_pursuit_last_position) >= stuck_pursuit_progress_distance:
+		blind_pursuit_stuck_timer = 0.0
+	else:
+		blind_pursuit_stuck_timer += delta
+	blind_pursuit_last_position = global_position
+
+	if blind_pursuit_stuck_timer < stuck_pursuit_timeout:
+		return
+
+	blackboard.set_value("has_last_known_player_position", false)
+	blackboard.set_value("player", null)
+	blackboard.set_value("is_player_in_detect_area", false)
+	velocity.x = 0.0
+	blind_pursuit_stuck_timer = 0.0
+	tracking_blind_pursuit_progress = false
+	play_animation("idleactive", idle_active_playback_speed)
+	log_ai("blind pursuit stalled; switching to idleactive watch")
+
 func _on_player_entered_detect_area(body: Node2D) -> void:
 	if not _uses_aggro_sight() and body.is_in_group("player") and _is_player_in_detection_view(body):
 		_set_detected_player(body)
@@ -419,6 +464,21 @@ func chase_position(target_position: Vector2) -> void:
 	if dx * facing_direction < -underfoot_buffer:
 		facing_direction = signf(dx)
 
+	if is_holding_chase_position:
+		vault_jump_attempts = 0
+		vault_jump_pending = false
+	else:
+		var obstacle_ahead := _has_low_obstacle_ahead()
+		if obstacle_ahead:
+			vault_jump_pending = true
+		if is_on_floor() and vault_jump_pending and vault_jump_attempts < 2:
+			vault_jump_attempts += 1
+			velocity.y = JUMP_VELOCITY if vault_jump_attempts == 1 else vault_retry_jump_velocity
+			vault_jump_pending = false
+		elif is_on_floor() and not obstacle_ahead:
+			vault_jump_pending = false
+			vault_jump_attempts = 0
+
 	velocity.x = 0.0 if is_holding_chase_position else facing_direction * chase_speed
 	if is_holding_chase_position:
 		if current_animation != "idleactive":
@@ -428,6 +488,20 @@ func chase_position(target_position: Vector2) -> void:
 	elif current_animation != "running":
 		play_animation("running")
 	_apply_facing(facing_direction)
+
+func _has_low_obstacle_ahead() -> bool:
+	var body_half_width := _get_body_half_width()
+	var probe_origin := global_position + Vector2(facing_direction * (body_half_width + 1.0), -8.0)
+	var probe_offset := Vector2(facing_direction * vault_probe_distance, 0.0)
+	var query := PhysicsRayQueryParameters2D.create(probe_origin, probe_origin + probe_offset)
+	query.exclude = [get_rid()]
+	if not get_world_2d().direct_space_state.intersect_ray(query):
+		return false
+
+	var clearance_origin := probe_origin - Vector2(0.0, vault_obstacle_height)
+	query.from = clearance_origin
+	query.to = clearance_origin + probe_offset
+	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
 func _apply_facing(direction: float) -> void:
 	sprite.flip_h = direction > 0
