@@ -17,6 +17,10 @@ extends Node2D
 @export_range(0.0, 1000.0, 10.0) var slow_push_speed := 220.0
 ## Upward component of the push applied below the damage threshold.
 @export_range(0.0, 500.0, 10.0) var slow_push_lift := 80.0
+## Horizontal speed applied to non-player targets on damaging impacts.
+@export_range(0.0, 1500.0, 10.0) var damage_push_speed := 350.0
+## Upward component of the launch applied to non-player targets on damaging impacts.
+@export_range(0.0, 800.0, 10.0) var damage_push_lift := 220.0
 ## The arm must stay below this angular speed before returning to its starting angle.
 @export_range(0.0, 5.0, 0.05) var reset_speed_threshold := 2.3
 ## The arm must also be within this many degrees of vertical to avoid resetting at normal turning points.
@@ -33,7 +37,7 @@ extends Node2D
 func _ready() -> void:
 	# Pass the custom settings down to the physics body when the game starts
 	if not Engine.is_editor_hint() and pendulum_arm:
-		pendulum_arm.call("configure_swing", swing_angle, swing_speed, physics_simulation_enabled, physics_angular_damp, reset_speed_threshold, reset_angle_tolerance_degrees, reset_slow_duration, reset_return_duration, damage_angular_speed_threshold, slow_push_speed, slow_push_lift)
+		pendulum_arm.call("configure_swing", swing_angle, swing_speed, physics_simulation_enabled, physics_angular_damp, reset_speed_threshold, reset_angle_tolerance_degrees, reset_slow_duration, reset_return_duration, damage_angular_speed_threshold, slow_push_speed, slow_push_lift, damage_push_speed, damage_push_lift)
 		if debug_diagnostics:
 			print("[Pendulum:%s] ready physics_enabled=%s arm_physics=%s frozen=%s angle=%.1f impulse=%s angular_damp=%.2f reset_speed=%.2f" % [name, physics_simulation_enabled, pendulum_arm.get("use_physics_simulation"), pendulum_arm.freeze, swing_angle, physics_trigger_impulse, physics_angular_damp, reset_speed_threshold])
 

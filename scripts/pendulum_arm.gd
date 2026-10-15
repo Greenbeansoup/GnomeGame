@@ -18,6 +18,8 @@ var reset_return_duration := 0.6
 var damage_angular_speed_threshold := 1.0
 var slow_push_speed := 220.0
 var slow_push_lift := 80.0
+var damage_push_speed := 500.0
+var damage_push_lift := 220.0
 var start_rotation := 0.0
 var slow_motion_timer := 0.0
 var has_started_physics_swing := false
@@ -43,7 +45,7 @@ func _ready() -> void:
 		max_contacts_reported = 4
 		damage_area.body_entered.connect(_on_damage_area_body_entered)
 
-func configure_swing(initial_angle: float, configured_speed: float, physics_mode_enabled: bool, configured_angular_damp: float, configured_reset_speed_threshold: float, configured_reset_angle_tolerance_degrees: float, configured_reset_slow_duration: float, configured_reset_return_duration: float, configured_damage_angular_speed_threshold: float, configured_slow_push_speed: float, configured_slow_push_lift: float) -> void:
+func configure_swing(initial_angle: float, configured_speed: float, physics_mode_enabled: bool, configured_angular_damp: float, configured_reset_speed_threshold: float, configured_reset_angle_tolerance_degrees: float, configured_reset_slow_duration: float, configured_reset_return_duration: float, configured_damage_angular_speed_threshold: float, configured_slow_push_speed: float, configured_slow_push_lift: float, configured_damage_push_speed: float, configured_damage_push_lift: float) -> void:
 	swing_angle = initial_angle
 	swing_speed = configured_speed
 	use_physics_simulation = physics_mode_enabled
@@ -54,6 +56,8 @@ func configure_swing(initial_angle: float, configured_speed: float, physics_mode
 	damage_angular_speed_threshold = maxf(configured_damage_angular_speed_threshold, 0.0)
 	slow_push_speed = maxf(configured_slow_push_speed, 0.0)
 	slow_push_lift = maxf(configured_slow_push_lift, 0.0)
+	damage_push_speed = maxf(configured_damage_push_speed, 0.0)
+	damage_push_lift = maxf(configured_damage_push_lift, 0.0)
 	has_started_physics_swing = false
 	is_returning_to_start = false
 	is_activation_pending = false
@@ -174,9 +178,24 @@ func _on_damage_area_body_entered(body: Node2D) -> void:
 	if debug_diagnostics:
 		print("[PendulumArm:%s] impact body=%s groups=%s angular_speed=%.3f threshold=%.3f action=%s" % [name, body.name, body.get_groups(), impact_speed, damage_angular_speed_threshold, "damage" if should_damage else "push"])
 	if should_damage:
+		if body is PhysicsBody2D:
+			body.call_deferred("add_collision_exception_with", self)
 		body.call_deferred("take_damage")
+		if not body.is_in_group("player"):
+			var damage_push_velocity := _get_push_velocity(body, damage_push_speed, damage_push_lift)
+			if body.has_method("apply_attack_push"):
+				body.call_deferred("apply_attack_push", damage_push_velocity)
+			elif body is CharacterBody2D:
+				body.call_deferred("set", "velocity", damage_push_velocity)
 		return
 
+	var push_velocity := _get_push_velocity(body, slow_push_speed, slow_push_lift)
+	if body.has_method("apply_attack_push"):
+		body.call_deferred("apply_attack_push", push_velocity)
+	elif body is CharacterBody2D:
+		body.call_deferred("set", "velocity", push_velocity)
+
+func _get_push_velocity(body: Node2D, horizontal_speed: float, upward_speed: float) -> Vector2:
 	var head_offset := head_collision_shape.global_position - global_position
 	var tangent_velocity := Vector2(-angular_velocity * head_offset.y, angular_velocity * head_offset.x)
 	var push_direction := signf(tangent_velocity.x)
@@ -184,8 +203,4 @@ func _on_damage_area_body_entered(body: Node2D) -> void:
 		push_direction = signf(body.global_position.x - global_position.x)
 	if is_zero_approx(push_direction):
 		push_direction = 1.0
-	var push_velocity := Vector2(push_direction * slow_push_speed, -slow_push_lift)
-	if body.has_method("apply_attack_push"):
-		body.call_deferred("apply_attack_push", push_velocity)
-	elif body is CharacterBody2D:
-		body.call_deferred("set", "velocity", push_velocity)
+	return Vector2(push_direction * horizontal_speed, -upward_speed)

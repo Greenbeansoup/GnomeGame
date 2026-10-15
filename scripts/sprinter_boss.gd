@@ -78,6 +78,14 @@ func _ready():
 
 func _physics_process(delta):
 	attack_recovery_timer = maxf(attack_recovery_timer - delta, 0.0)
+	if is_dead:
+		if not is_on_floor():
+			velocity += get_gravity() * delta
+		else:
+			velocity.x = move_toward(velocity.x, 0.0, 1200.0 * delta)
+		move_and_slide()
+		return
+
 	if pendulum_push_timer > 0.0:
 		pendulum_push_timer = maxf(pendulum_push_timer - delta, 0.0)
 		if not is_on_floor():
@@ -110,6 +118,7 @@ func can_attack_player(player: Node2D) -> bool:
 
 func apply_attack_push(push_velocity: Vector2) -> void:
 	if is_dead:
+		velocity = push_velocity
 		return
 
 	pendulum_push_timer = pendulum_push_control_duration
@@ -295,11 +304,13 @@ func die_from_pendulum() -> void:
 
 	is_dead = true
 	velocity = Vector2.ZERO
+	collision_layer = 0
 	forget_timer.stop()
 	beehave_tree.enabled = false
-	set_physics_process(false)
 
-	body_collision_shape.set_deferred("disabled", true)
+	for player in get_tree().get_nodes_in_group("player"):
+		if player is PhysicsBody2D:
+			add_collision_exception_with(player)
 	detect_collision_shape.set_deferred("disabled", true)
 	hammer_collision_shape.set_deferred("disabled", true)
 	aggro_collision_polygon.set_deferred("disabled", true)
