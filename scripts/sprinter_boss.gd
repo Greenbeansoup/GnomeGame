@@ -56,8 +56,10 @@ var blind_pursuit_last_position := Vector2.ZERO
 var tracking_blind_pursuit_progress := false
 var vault_jump_attempts := 0
 var vault_jump_pending := false
+var vault_last_jump_position := Vector2.ZERO
 var is_holding_chase_position := false
 var is_dead := false
+var chase_music_active := false
 
 const DEBUG_AI := false
 
@@ -85,6 +87,19 @@ func _ready():
 	
 	# Connect the timer's timeout signal to our cleanup function
 	forget_timer.timeout.connect(_on_forget_timer_timeout)
+
+func _exit_tree() -> void:
+	_set_chase_music_active(false)
+
+
+func _set_chase_music_active(active: bool) -> void:
+	if chase_music_active == active:
+		return
+	chase_music_active = active
+	var game_manager = get_tree().get_first_node_in_group("game_manager")
+	if game_manager and game_manager.has_method("set_chase_music_active"):
+		game_manager.set_chase_music_active(self, active)
+
 
 func _physics_process(delta):
 	attack_recovery_timer = maxf(attack_recovery_timer - delta, 0.0)
@@ -264,6 +279,7 @@ func _update_pursuit_range() -> void:
 	var in_range := true if _uses_aggro_sight() else distance <= pursuit_range and detect_area.overlaps_body(player)
 
 	if in_range:
+		_set_chase_music_active(true)
 		if not was_in_pursuit_range:
 			log_ai("PURSUIT RANGE ENTER distance=%.1f" % distance)
 		forget_timer.stop()
@@ -348,6 +364,7 @@ func die_from_pendulum() -> void:
 		return
 
 	is_dead = true
+	_set_chase_music_active(false)
 	velocity = Vector2.ZERO
 	collision_layer = 0
 	forget_timer.stop()
@@ -369,6 +386,11 @@ func die_from_pendulum() -> void:
 	play_animation("kill")
 
 func play_animation(anim_name: String, speed_scale: float = 1.0) -> void:
+	var watching_without_target: bool = anim_name == "idleactive" \
+		and not beehave_tree.blackboard.get_value("is_player_in_detect_area", false) \
+		and not beehave_tree.blackboard.get_value("has_last_known_player_position", false)
+	if anim_name == "idle" or watching_without_target:
+		_set_chase_music_active(false)
 	current_animation = anim_name
 	animation_player.play(anim_name, -1.0, speed_scale)
 
@@ -468,11 +490,14 @@ func chase_position(target_position: Vector2) -> void:
 		vault_jump_attempts = 0
 		vault_jump_pending = false
 	else:
+		if vault_jump_attempts > 0 and absf(global_position.x - vault_last_jump_position.x) >= vault_probe_distance:
+			vault_jump_attempts = 0
 		var obstacle_ahead := _has_low_obstacle_ahead()
 		if obstacle_ahead:
 			vault_jump_pending = true
 		if is_on_floor() and vault_jump_pending and vault_jump_attempts < 2:
 			vault_jump_attempts += 1
+			vault_last_jump_position = global_position
 			velocity.y = JUMP_VELOCITY if vault_jump_attempts == 1 else vault_retry_jump_velocity
 			vault_jump_pending = false
 		elif is_on_floor() and not obstacle_ahead:
@@ -490,11 +515,14 @@ func chase_position(target_position: Vector2) -> void:
 	_apply_facing(facing_direction)
 
 func _has_low_obstacle_ahead() -> bool:
-	var body_half_width := _get_body_half_width()
-	var probe_origin := global_position + Vector2(facing_direction * (body_half_width + 1.0), -8.0)
-	var probe_offset := Vector2(facing_direction * vault_probe_distance, 0.0)
+	var body_rect := body_collision_shape.shape.get_rect()
+	var foot_position := body_collision_shape.to_global(Vector2(body_rect.get_center().x, body_rect.end.y))
+	var probe_origin := foot_position - Vector2(0.0, 1.0)
+	var probe_offset := Vector2(facing_direction * (_get_body_half_width() + vault_probe_distance), 0.0)
 	var query := PhysicsRayQueryParameters2D.create(probe_origin, probe_origin + probe_offset)
 	query.exclude = [get_rid()]
+	query.collision_mask = collision_mask
+	query.hit_from_inside = true
 	if not get_world_2d().direct_space_state.intersect_ray(query):
 		return false
 

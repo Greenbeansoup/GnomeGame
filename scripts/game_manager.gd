@@ -4,13 +4,24 @@ extends Node2D
 @export var level_1_scene: PackedScene
 @export var test_arena_scene: PackedScene
 @export var main_menu_scene: PackedScene
+@export var chase_music: AudioStream = preload("res://assets/music/NastyRat.wav")
+@export_range(0.0, 5.0, 0.05) var background_music_resume_delay := 0.75
+@export_range(0.0, 5.0, 0.05) var background_music_fade_in_duration := 1.0
 
 @onready var pause_menu = $UI/PauseMenu
 @onready var menu_holder = $UI/MenuHolder
 @onready var ui_layer = $UI
 @onready var current_scene_holder = $CurrentScene
+@onready var music_player: AudioStreamPlayer = $MusicPlayer
+@onready var background_music: AudioStream = music_player.stream
+@onready var music_volume: float = music_player.volume_linear
 
 var current_level_scene: PackedScene
+var chase_music_sources: Dictionary = {}
+var background_music_position := 0.0
+var chase_music_position := 0.0
+var background_music_resume_timer := Timer.new()
+var music_fade_tween: Tween
 # The last PlayerSpawn marker a chunk reported the player reaching; survives level
 # restarts (death/respawn) but resets whenever a level is started fresh.
 var last_spawn_position: Vector2
@@ -19,6 +30,9 @@ var has_last_spawn := false
 func _ready():
 	add_to_group("game_manager")
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	background_music_resume_timer.one_shot = true
+	add_child(background_music_resume_timer)
+	background_music_resume_timer.timeout.connect(_resume_background_music)
 	# Start by showing the main menu
 	show_main_menu()
 	
@@ -52,6 +66,47 @@ func show_main_menu():
 	menu.start_game_pressed.connect(start_level.bind(level_1_scene))
 	menu.start_test_arena_pressed.connect(start_level.bind(test_arena_scene))
 	menu.exit_pressed.connect(_on_exit_pressed)
+
+func set_chase_music_active(source: Node, active: bool) -> void:
+	var source_id := source.get_instance_id()
+	if active:
+		if chase_music_sources.has(source_id) or not chase_music:
+			return
+		chase_music_sources[source_id] = true
+		if chase_music_sources.size() == 1:
+			background_music_resume_timer.stop()
+			if music_fade_tween:
+				music_fade_tween.kill()
+			music_player.volume_linear = music_volume
+			if music_player.stream == background_music:
+				background_music_position = music_player.get_playback_position()
+			music_player.stream = chase_music
+			music_player.play(chase_music_position)
+	else:
+		if not chase_music_sources.has(source_id):
+			return
+		chase_music_sources.erase(source_id)
+		if chase_music_sources.is_empty():
+			chase_music_position = music_player.get_playback_position()
+			music_player.stop()
+			if background_music_resume_delay <= 0.0:
+				_resume_background_music()
+			else:
+				background_music_resume_timer.start(background_music_resume_delay)
+
+
+func _resume_background_music() -> void:
+	if not chase_music_sources.is_empty():
+		return
+	if music_fade_tween:
+		music_fade_tween.kill()
+	music_player.stream = background_music
+	music_player.volume_linear = 0.0 if background_music_fade_in_duration > 0.0 else music_volume
+	music_player.play(background_music_position)
+	if background_music_fade_in_duration > 0.0:
+		music_fade_tween = create_tween()
+		music_fade_tween.tween_property(music_player, "volume_linear", music_volume, background_music_fade_in_duration)
+
 
 func _on_exit_pressed():
 	get_tree().quit()

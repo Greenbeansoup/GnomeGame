@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bfhv110aetyoi"
-path="res://.godot/imported/OutsetCavern.wav-023271f2adad045e340533314cfc96c6.sample"
+path="res://.godot/imported/OutsetCavern.wav-e7720966469b8015825a9849ab933930.sample"
 
 [deps]
 
-source_file="res://assets/sounds/OutsetCavern.wav"
-dest_files=["res://.godot/imported/OutsetCavern.wav-023271f2adad045e340533314cfc96c6.sample"]
+source_file="res://assets/music/OutsetCavern.wav"
+dest_files=["res://.godot/imported/OutsetCavern.wav-e7720966469b8015825a9849ab933930.sample"]
 
 [params]
 
@@ -18,7 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop_mode=0
+edit/loop_mode=2
 edit/loop_begin=0
 edit/loop_end=-1
 compress/mode=2
