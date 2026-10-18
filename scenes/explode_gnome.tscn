@@ -1,0 +1,51 @@
+[gd_scene format=4 uid="uid://cwrqfcljfofay"]
+
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_kc4xc"]
+_data = PackedByteArray("AAADAAUAAAABAAAAgAAAAIAAAADyAAAAUklGRuoAAABXRUJQVlA4TN4AAAAvf8AfEEdgJJLU9Ml3/4CmCw4yDQghvIIoY9qKRUkAIGgO90ZmFfMfAADIwXA5QWa/tzrXAbi17UhSNDPoFG7FQAiTQsufRT8Guaz128Xqypud70NE/yfA/v3/J06XO8HFkNA6JQAtwMyFTgg36RMCaktK4RSAKzkWwF3IkABMLKROsSDgrgQgcdLxJRKACWcgMpVOOF4BnXsD7p62OWWsgcenbd7q8O2g6d5zkBw69yy+bTKNxVFVSiyyeC9j94OjaliTIVcW2Uz2vs2V20qd2fvOXvuuyfQ3ve/s2wE=")
+size_override = Vector2(128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n085u"]
+atlas = SubResource("PortableCompressedTexture2D_kc4xc")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s1qeg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n085u")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 10.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
+size = Vector2(15, 16)
+
+[node name="ExplodeGnome" type="CharacterBody2D" unique_id=1032712448]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1147762659]
+texture_filter = 1
+position = Vector2(-8, -64)
+sprite_frames = SubResource("SpriteFrames_s1qeg")
+metadata/_aseprite_wizard_interface_config_ = {
+"pending_changes": {}
+}
+metadata/_aseprite_wizard_config_ = {
+"embed_tex": true,
+"layers": [],
+"o_ex_p": "",
+"o_folder": "",
+"o_name": "",
+"only_visible": false,
+"scale": "1.0",
+"should_round_fps": true,
+"slice": "",
+"source": "res://assets/sprites/Explode Gnome Boss.aseprite",
+"source_uid": 1685534431268348727
+}
+metadata/_aseprite_wizard_source_file_hash_ = "886ce5a3965f3d64a5fe57d295eda5b2"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1029670291]
+position = Vector2(0, -8)
+shape = SubResource("RectangleShape2D_g4v7s")

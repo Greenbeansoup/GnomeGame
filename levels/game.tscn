@@ -36,6 +36,7 @@ script = ExtResource("1_0tnpc")
 
 [node name="Background" parent="." unique_id=1345437117 instance=ExtResource("16_ol2u7")]
 z_index = -10
+position = Vector2(190, -218)
 
 [node name="ChunkLoader" type="Node2D" parent="." unique_id=1670907364]
 script = ExtResource("15_chunk_loader")
@@ -111,4 +112,4 @@ active_rect = Rect2(0, -320, 576, 320)
 metadata/_custom_type_script = "uid://8unsjw0k4bny"
 
 [node name="PlayerSpawn" type="Marker2D" parent="." unique_id=337352650]
-position = Vector2(2810, -1192)
+position = Vector2(99, -144)

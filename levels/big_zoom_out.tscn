@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dbmu6ql4db2ow" path="res://scenes/big_leaf_plant.tscn" id="2_5p501"]
 [ext_resource type="FontFile" uid="uid://b1gbvxr5lgyi1" path="res://assets/fonts/PixelOperator8.ttf" id="3_jrhs5"]
 [ext_resource type="PackedScene" uid="uid://dxewagk0u1h3g" path="res://scenes/water_dripper.tscn" id="4_ktdu4"]
+[ext_resource type="PackedScene" uid="uid://cwrqfcljfofay" path="res://scenes/explode_gnome.tscn" id="5_r3rm1"]
 
 [node name="BigZoomOut" unique_id=1253615360 instance=ExtResource("1_pvvsl")]
 
@@ -39,3 +40,6 @@ position = Vector2(449, -549)
 
 [node name="WaterDripper3" parent="." index="7" unique_id=379683590 instance=ExtResource("4_ktdu4")]
 position = Vector2(824, -496)
+
+[node name="ExplodeGnome" parent="." index="8" unique_id=1032712448 instance=ExtResource("5_r3rm1")]
+position = Vector2(297, -176)
