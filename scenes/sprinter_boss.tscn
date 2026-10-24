@@ -1,17 +1,8 @@
 [gd_scene format=4 uid="uid://b03448nirv1po"]
 
 [ext_resource type="Script" uid="uid://c4q3vrally4bv" path="res://scripts/sprinter_boss.gd" id="1_wjbkg"]
-[ext_resource type="Script" uid="uid://g3ymptea3lch" path="res://addons/beehave/nodes/beehave_tree.gd" id="2_i3umu"]
-[ext_resource type="Script" uid="uid://c654as83nhwql" path="res://addons/beehave/nodes/composites/selector_reactive.gd" id="3_reactive"]
-[ext_resource type="Script" uid="uid://p5xxbs5ctove" path="res://scripts/behaviors/player_in_range_behavior.gd" id="4_srmfu"]
-[ext_resource type="Script" uid="uid://d1rif0ec5eh4g" path="res://addons/beehave/nodes/composites/sequence.gd" id="5_23tw0"]
-[ext_resource type="Script" uid="uid://7l4nklklcye0" path="res://scripts/behaviors/move_to_player_behavior.gd" id="6_cabuo"]
-[ext_resource type="Script" uid="uid://bnmnyi4odhmam" path="res://scripts/behaviors/wind_up_behavior.gd" id="7_4otcf"]
-[ext_resource type="Script" uid="uid://5jcwjgslmx7n" path="res://scripts/behaviors/spot_player_behavior.gd" id="7_veapx"]
-[ext_resource type="Script" uid="uid://ba76d7mdhiy62" path="res://scripts/behaviors/player_detected_behavior.gd" id="8_veapx"]
-[ext_resource type="Script" uid="uid://b2x74dlf7qwys" path="res://scripts/behaviors/detecting_player_behavior.gd" id="9_veapx"]
-[ext_resource type="Script" uid="uid://benwr756uxict" path="res://scripts/behaviors/player_in_range_condition.gd" id="11_y3i08"]
-[ext_resource type="Script" uid="uid://d327adt00xoa1" path="res://scripts/behaviors/attack_action.gd" id="12_edks4"]
+[ext_resource type="PackedScene" path="res://scenes/pursuit_behavior.tscn" id="2_pursuit"]
+[ext_resource type="PackedScene" path="res://scenes/vault_behavior.tscn" id="3_vault"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5xdlu"]
 height = 54.0
@@ -347,52 +338,23 @@ metadata/_aseprite_wizard_source_file_hash_ = "da65ef4ba1c6e12e6cfc62211949157a"
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=190863515]
 libraries/ = SubResource("AnimationLibrary_boss")
 
-[node name="BeehaveTree" type="Node" parent="." unique_id=1357162980 node_paths=PackedStringArray("blackboard", "actor")]
-script = ExtResource("2_i3umu")
-actor_node_path = NodePath("..")
-blackboard = NodePath("@Node@30769")
+[node name="PursuitBehavior" parent="." node_paths=PackedStringArray("actor", "animation_player", "detect_area", "aggro_sight", "line_of_sight", "body_shape") instance=ExtResource("2_pursuit")]
 actor = NodePath("..")
-
-[node name="SelectorReactiveComposite" type="Node" parent="BeehaveTree" unique_id=2141388327]
-script = ExtResource("3_reactive")
-
-[node name="AttackSequence" type="Node" parent="BeehaveTree/SelectorReactiveComposite" unique_id=1188244468]
-script = ExtResource("5_23tw0")
-
-[node name="PlayerInRangeCondition" type="Node" parent="BeehaveTree/SelectorReactiveComposite/AttackSequence" unique_id=1515597046]
-script = ExtResource("11_y3i08")
-
-[node name="AttackAction" type="Node" parent="BeehaveTree/SelectorReactiveComposite/AttackSequence" unique_id=214683363]
-script = ExtResource("12_edks4")
-
-[node name="PursuitSequence" type="Node" parent="BeehaveTree/SelectorReactiveComposite" unique_id=2030906625]
-script = ExtResource("5_23tw0")
-
-[node name="PlayerSpotted" type="Node" parent="BeehaveTree/SelectorReactiveComposite/PursuitSequence" unique_id=1789509418]
-script = ExtResource("4_srmfu")
-
-[node name="SpotPlayer" type="Node" parent="BeehaveTree/SelectorReactiveComposite/PursuitSequence" unique_id=1518274808]
-script = ExtResource("7_veapx")
-metadata/_custom_type_script = "uid://5jcwjgslmx7n"
-
-[node name="WindUp" type="Node" parent="BeehaveTree/SelectorReactiveComposite/PursuitSequence" unique_id=1399721789]
-script = ExtResource("7_4otcf")
-
-[node name="MoveToPlayer" type="Node" parent="BeehaveTree/SelectorReactiveComposite/PursuitSequence" unique_id=1096090710]
-script = ExtResource("6_cabuo")
-metadata/_custom_type_script = "uid://7l4nklklcye0"
-
-[node name="DetectionSequence" type="Node" parent="BeehaveTree/SelectorReactiveComposite" unique_id=915824950]
-script = ExtResource("5_23tw0")
-
-[node name="PlayerDetected" type="Node" parent="BeehaveTree/SelectorReactiveComposite/DetectionSequence" unique_id=855842032]
-script = ExtResource("8_veapx")
-
-[node name="DetectingPlayer" type="Node" parent="BeehaveTree/SelectorReactiveComposite/DetectionSequence" unique_id=801337294]
-script = ExtResource("9_veapx")
+animation_player = NodePath("../AnimationPlayer")
+detect_area = NodePath("../DetectArea")
+aggro_sight = NodePath("../AggroSightCone")
+line_of_sight = NodePath("../LineOfSight")
+body_shape = NodePath("../CollisionShape2D")
+automatic_update = false
+idle_speed = 0.1
+detection_speed = 0.5
+idle_active_speed = 0.5
 
 [node name="DetectArea" type="Area2D" parent="." unique_id=1938113731]
 collision_layer = 0
+
+[node name="VaultBehavior" parent="." node_paths=PackedStringArray("body_shape") instance=ExtResource("3_vault")]
+body_shape = NodePath("../CollisionShape2D")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectArea" unique_id=2095432840]
 position = Vector2(0, -43)

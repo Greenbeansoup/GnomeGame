@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/pursuit_behavior.gd" id="1_component"]
+[ext_resource type="Script" path="res://addons/beehave/nodes/beehave_tree.gd" id="2_tree"]
+[ext_resource type="Script" path="res://scripts/behaviors/pursuit_action.gd" id="3_action"]
+
+[node name="PursuitBehavior" type="Node"]
+script = ExtResource("1_component")
+
+[node name="BeehaveTree" type="Node" parent="."]
+script = ExtResource("2_tree")
+actor_node_path = NodePath("..")
+
+[node name="Pursuit" type="Node" parent="BeehaveTree"]
+script = ExtResource("3_action")

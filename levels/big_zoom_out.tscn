@@ -43,3 +43,4 @@ position = Vector2(824, -496)
 
 [node name="ExplodeGnome" parent="." index="8" unique_id=1032712448 instance=ExtResource("5_r3rm1")]
 position = Vector2(297, -176)
+start_facing = 1

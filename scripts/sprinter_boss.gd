@@ -1,7 +1,9 @@
 extends CharacterBody2D
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
-@onready var beehave_tree = $BeehaveTree
+@onready var pursuit: PursuitBehavior = $PursuitBehavior
+@onready var vault = $VaultBehavior
+@onready var beehave_tree: BeehaveTree = $PursuitBehavior/BeehaveTree
 @onready var detect_area: Area2D = $DetectArea
 @onready var aggro_sight_cone: Area2D = $AggroSightCone
 @onready var line_of_sight: RayCast2D = $LineOfSight
@@ -11,6 +13,7 @@ extends CharacterBody2D
 @onready var hammer_collision_shape: CollisionShape2D = $HammerCollider/CollisionShape2D
 @onready var aggro_collision_polygon: CollisionPolygon2D = $AggroSightCone/CollisionPolygon2D
 
+@export_enum("Left:-1", "Right:1") var start_facing: int = -1
 @export_range(1.0, 200.0, 1.0) var attack_range := 65.0
 @export_range(1.0, 1000.0, 1.0) var pursuit_range := 150.0
 @export_range(0.0, 1000.0, 1.0) var chase_speed := 195.0
@@ -28,14 +31,10 @@ extends CharacterBody2D
 @export var keep_alive_group := &"chunk_keep_alive"
 @export var ignore_home_chunk_keep_alive := true
 
-var forget_timer: Timer
-
 const SPEED = 100.0
 const JUMP_VELOCITY = -200.0
 # Extra space beyond the boss body where it stops instead of changing direction.
 const FACING_FLIP_BUFFER = 8.0
-# Extra detection distance behind the boss body, rather than behind its center.
-const DETECTION_REAR_BUFFER = 16.0
 # Animations are authored at the Aseprite frame rate; these slow down playback at runtime.
 const IDLE_SPEED_SCALE = 0.1
 const DETECTING_SPEED_SCALE = 0.5
@@ -51,12 +50,6 @@ var attack_animation_finished := false
 var attack_hit_players: Array[Node] = []
 var attack_recovery_timer := 0.0
 var pendulum_push_timer := 0.0
-var blind_pursuit_stuck_timer := 0.0
-var blind_pursuit_last_position := Vector2.ZERO
-var tracking_blind_pursuit_progress := false
-var vault_jump_attempts := 0
-var vault_jump_pending := false
-var vault_last_jump_position := Vector2.ZERO
 var is_holding_chase_position := false
 var is_dead := false
 var chase_music_active := false
@@ -71,22 +64,47 @@ func log_ai(msg: String) -> void:
 		print("[AI %s] %s" % [name, msg])
 
 func _ready():
+	facing_direction = float(start_facing)
+	pursuit.facing_direction = facing_direction
+	aggro_sight_cone.scale.x = -facing_direction
+	_apply_facing(facing_direction)
 	if keep_chunks_alive:
 		add_to_group(keep_alive_group)
 
 	play_idle_animation()
 	animation_player.animation_finished.connect(_on_animation_finished)
-	
-	detect_area.body_entered.connect(_on_player_entered_detect_area)
-	detect_area.body_exited.connect(_on_player_exited_detect_area)
-	
-	forget_timer = Timer.new()
-	forget_timer.wait_time = 5.0
-	forget_timer.one_shot = true
-	add_child(forget_timer)
-	
-	# Connect the timer's timeout signal to our cleanup function
-	forget_timer.timeout.connect(_on_forget_timer_timeout)
+	pursuit.pursuit_changed.connect(_set_chase_music_active)
+	pursuit.state_changed.connect(_on_pursuit_state_changed)
+	pursuit.pursuit_range = pursuit_range
+	pursuit.chase_speed = chase_speed
+	pursuit.resume_distance = chase_resume_distance
+	pursuit.stuck_timeout = stuck_pursuit_timeout
+	pursuit.stuck_progress_distance = stuck_pursuit_progress_distance
+	vault.obstacle_height = vault_obstacle_height
+	vault.probe_distance = vault_probe_distance
+	vault.jump_velocity = JUMP_VELOCITY
+	vault.retry_jump_velocity = vault_retry_jump_velocity
+
+
+func _on_pursuit_state_changed(_previous: PursuitBehavior.State, state: PursuitBehavior.State) -> void:
+	if state == PursuitBehavior.State.IDLE:
+		attack_recovery_timer = 0.0
+		spotted_animation_finished = false
+		windup_animation_finished = false
+		attack_animation_finished = false
+		is_holding_chase_position = false
+
+
+func tick_pursuit_combat() -> bool:
+	if is_playing_attack_animation():
+		return true
+	if has_finished_attack_animation():
+		finish_attack()
+		return true
+	if can_attack_player(pursuit.target):
+		play_attack_animation()
+		return true
+	return false
 
 func _exit_tree() -> void:
 	_set_chase_music_active(false)
@@ -117,16 +135,17 @@ func _physics_process(delta):
 			velocity += get_gravity() * delta
 		move_and_slide()
 		if is_zero_approx(pendulum_push_timer) and not is_dead:
-			beehave_tree.enabled = true
+			pursuit.enabled = true
 		return
 
 	# Add the gravity.
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
-	_refresh_player_detection()
-	_update_pursuit_range()
-	_update_blind_pursuit_stuck(delta)
+	pursuit.facing_direction = facing_direction
+	pursuit.flip_detection = idle_active_flip_detection
+	pursuit.update(delta)
+	vault.update()
 	_process_attack_hits()
 
 	move_and_slide()
@@ -148,7 +167,7 @@ func apply_attack_push(push_velocity: Vector2) -> void:
 		return
 
 	pendulum_push_timer = pendulum_push_control_duration
-	beehave_tree.enabled = false
+	pursuit.enabled = false
 	velocity = push_velocity
 
 func _process_attack_hits() -> void:
@@ -172,189 +191,8 @@ func _process_attack_hits() -> void:
 		elif body.has_method("squash"):
 			body.squash()
 
-func _refresh_player_detection() -> void:
-	_update_aggro_sight_facing()
-	var player := _get_visible_player_candidate()
-	if is_instance_valid(player) and _can_see_player(player):
-		_set_detected_player(player)
-	elif beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
-		_lose_player_sight()
-	elif not beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false):
-		_clear_detected_player()
-
-
-func _get_visible_player_candidate() -> Node2D:
-	var sight_area := aggro_sight_cone if _uses_aggro_sight() else detect_area
-	for body in sight_area.get_overlapping_bodies():
-		if body is Node2D and body.is_in_group("player"):
-			return body
-	return null
-
-
-func _can_see_player(player: Node2D) -> bool:
-	if not _uses_aggro_sight():
-		return _is_player_in_detection_view(player)
-
-	var target_position := player.global_position
-	var player_collision := player.get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if player_collision:
-		target_position = player_collision.global_position
-	line_of_sight.target_position = line_of_sight.to_local(target_position)
-	line_of_sight.force_raycast_update()
-	return line_of_sight.is_colliding() and line_of_sight.get_collider() == player
-
-
-func _uses_aggro_sight() -> bool:
-	return beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false) \
-		or current_animation == "idleactive"
-
-
-func _update_aggro_sight_facing() -> void:
-	aggro_sight_cone.scale.x = -_get_detection_direction()
-
-
-func _is_player_in_detection_view(player: Node2D) -> bool:
-	var horizontal_offset := player.global_position.x - global_position.x
-	return horizontal_offset * _get_detection_direction() >= -(_get_body_half_width() + DETECTION_REAR_BUFFER)
-
-func _get_detection_direction() -> float:
-	if current_animation == "idleactive" and idle_active_flip_detection:
-		return -facing_direction
-	return facing_direction
-
 func _get_body_half_width() -> float:
 	return body_collision_shape.shape.get_rect().size.x * 0.5
-
-func _set_detected_player(player: Node2D) -> void:
-	var was_detected = beehave_tree.blackboard.get_value("is_player_in_detect_area", false)
-	beehave_tree.blackboard.set_value("is_player_in_detect_area", true)
-	beehave_tree.blackboard.set_value("player", player)
-	beehave_tree.blackboard.set_value("last_known_player_position", player.global_position)
-	beehave_tree.blackboard.set_value("has_last_known_player_position", true)
-	forget_timer.stop()
-	if not was_detected:
-		log_ai("DETECT ENTER player=%s" % player.name)
-
-
-func _lose_player_sight() -> void:
-	if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
-		return
-
-	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
-	beehave_tree.blackboard.set_value("player", null)
-	forget_timer.stop()
-	log_ai("SIGHT LOST (pursuing last known position)")
-
-
-func _clear_detected_player() -> void:
-	var had_target = beehave_tree.blackboard.get_value("is_player_in_detect_area", false) \
-		or beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false) \
-		or is_instance_valid(beehave_tree.blackboard.get_value("player"))
-	if not had_target:
-		return
-
-	beehave_tree.blackboard.set_value("is_player_in_detect_area", false)
-	beehave_tree.blackboard.set_value("is_player_in_pursuit_range", false)
-	beehave_tree.blackboard.set_value("player", null)
-	beehave_tree.blackboard.set_value("has_last_known_player_position", false)
-	forget_timer.stop()
-	attack_recovery_timer = 0.0
-	spotted_animation_finished = false
-	windup_animation_finished = false
-	attack_animation_finished = false
-	velocity.x = 0.0
-	play_idle_animation()
-	log_ai("DETECT CLEARED (player outside facing view)")
-
-func _update_pursuit_range() -> void:
-	if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
-		return
-
-	var player = beehave_tree.blackboard.get_value("player")
-	if not is_instance_valid(player):
-		return
-
-	var distance = absf(player.global_position.x - global_position.x)
-	var was_in_pursuit_range = beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false)
-	var in_range := true if _uses_aggro_sight() else distance <= pursuit_range and detect_area.overlaps_body(player)
-
-	if in_range:
-		_set_chase_music_active(true)
-		if not was_in_pursuit_range:
-			log_ai("PURSUIT RANGE ENTER distance=%.1f" % distance)
-		forget_timer.stop()
-		beehave_tree.blackboard.set_value("is_player_in_pursuit_range", true)
-	elif was_in_pursuit_range and forget_timer.is_stopped():
-		# Out of range but still detected: start the 5-second grace period before giving up
-		# the chase, instead of dropping it the instant they step outside pursuit_range.
-		log_ai("PURSUIT RANGE EXIT distance=%.1f (forget_timer started)" % distance)
-		forget_timer.start()
-
-func _update_blind_pursuit_stuck(delta: float) -> void:
-	var blackboard: Blackboard = beehave_tree.blackboard
-	var pursuing_last_known_position: bool = blackboard.get_value("is_player_in_pursuit_range", false) \
-		and not blackboard.get_value("is_player_in_detect_area", false) \
-		and blackboard.get_value("has_last_known_player_position", false) \
-		and not is_holding_chase_position
-	if not pursuing_last_known_position:
-		blind_pursuit_stuck_timer = 0.0
-		tracking_blind_pursuit_progress = false
-		return
-
-	if not tracking_blind_pursuit_progress:
-		blind_pursuit_last_position = global_position
-		tracking_blind_pursuit_progress = true
-		return
-
-	if global_position.distance_to(blind_pursuit_last_position) >= stuck_pursuit_progress_distance:
-		blind_pursuit_stuck_timer = 0.0
-	else:
-		blind_pursuit_stuck_timer += delta
-	blind_pursuit_last_position = global_position
-
-	if blind_pursuit_stuck_timer < stuck_pursuit_timeout:
-		return
-
-	blackboard.set_value("has_last_known_player_position", false)
-	blackboard.set_value("player", null)
-	blackboard.set_value("is_player_in_detect_area", false)
-	velocity.x = 0.0
-	blind_pursuit_stuck_timer = 0.0
-	tracking_blind_pursuit_progress = false
-	play_animation("idleactive", idle_active_playback_speed)
-	log_ai("blind pursuit stalled; switching to idleactive watch")
-
-func _on_player_entered_detect_area(body: Node2D) -> void:
-	if not _uses_aggro_sight() and body.is_in_group("player") and _is_player_in_detection_view(body):
-		_set_detected_player(body)
-
-func _on_player_exited_detect_area(body: Node2D) -> void:
-	if not body.is_in_group("player") or _uses_aggro_sight():
-		return
-
-	log_ai("DETECT EXIT raw self=%s player=%s diff=%s" % [global_position, body.global_position, body.global_position - global_position])
-
-	if beehave_tree.blackboard.get_value("is_player_in_detect_area", false):
-		_lose_player_sight()
-		return
-	if beehave_tree.blackboard.get_value("is_player_in_pursuit_range", false):
-		return
-
-	_clear_detected_player()
-	log_ai("DETECT EXIT player=%s (player cleared)" % body.name)
-
-func _on_forget_timer_timeout() -> void:
-	# 5 seconds outside pursuit_range without closing back in. Drop back to detecting
-	# (still tracked via DetectArea) instead of abandoning the chase outright.
-	var player = beehave_tree.blackboard.get_value("player")
-	if not is_instance_valid(player) or not detect_area.overlaps_body(player):
-		_clear_detected_player()
-		log_ai("FORGET_TIMER finalized deferred DETECT EXIT")
-		return
-
-	beehave_tree.blackboard.set_value("is_player_in_pursuit_range", false)
-	velocity.x = 0.0
-	log_ai("FORGET_TIMER timeout (attack flag cleared)")
 
 func take_damage() -> void:
 	die_from_pendulum()
@@ -367,8 +205,7 @@ func die_from_pendulum() -> void:
 	_set_chase_music_active(false)
 	velocity = Vector2.ZERO
 	collision_layer = 0
-	forget_timer.stop()
-	beehave_tree.enabled = false
+	pursuit.stop()
 
 	for player in get_tree().get_nodes_in_group("player"):
 		if player is PhysicsBody2D:
@@ -474,7 +311,7 @@ func chase_player(player: Node2D) -> void:
 	chase_position(player.global_position)
 
 
-func chase_position(target_position: Vector2) -> void:
+func chase_position(target_position: Vector2) -> bool:
 	var dx := target_position.x - global_position.x
 	var underfoot_buffer := _get_body_half_width() + FACING_FLIP_BUFFER
 	var resume_distance := maxf(chase_resume_distance, underfoot_buffer)
@@ -486,50 +323,14 @@ func chase_position(target_position: Vector2) -> void:
 	if dx * facing_direction < -underfoot_buffer:
 		facing_direction = signf(dx)
 
-	if is_holding_chase_position:
-		vault_jump_attempts = 0
-		vault_jump_pending = false
-	else:
-		if vault_jump_attempts > 0 and absf(global_position.x - vault_last_jump_position.x) >= vault_probe_distance:
-			vault_jump_attempts = 0
-		var obstacle_ahead := _has_low_obstacle_ahead()
-		if obstacle_ahead:
-			vault_jump_pending = true
-		if is_on_floor() and vault_jump_pending and vault_jump_attempts < 2:
-			vault_jump_attempts += 1
-			vault_last_jump_position = global_position
-			velocity.y = JUMP_VELOCITY if vault_jump_attempts == 1 else vault_retry_jump_velocity
-			vault_jump_pending = false
-		elif is_on_floor() and not obstacle_ahead:
-			vault_jump_pending = false
-			vault_jump_attempts = 0
-
 	velocity.x = 0.0 if is_holding_chase_position else facing_direction * chase_speed
 	if is_holding_chase_position:
 		if current_animation != "idleactive":
 			play_animation("idleactive", idle_active_playback_speed)
-		if not beehave_tree.blackboard.get_value("is_player_in_detect_area", false) and forget_timer.is_stopped():
-			forget_timer.start()
 	elif current_animation != "running":
 		play_animation("running")
 	_apply_facing(facing_direction)
-
-func _has_low_obstacle_ahead() -> bool:
-	var body_rect := body_collision_shape.shape.get_rect()
-	var foot_position := body_collision_shape.to_global(Vector2(body_rect.get_center().x, body_rect.end.y))
-	var probe_origin := foot_position - Vector2(0.0, 1.0)
-	var probe_offset := Vector2(facing_direction * (_get_body_half_width() + vault_probe_distance), 0.0)
-	var query := PhysicsRayQueryParameters2D.create(probe_origin, probe_origin + probe_offset)
-	query.exclude = [get_rid()]
-	query.collision_mask = collision_mask
-	query.hit_from_inside = true
-	if not get_world_2d().direct_space_state.intersect_ray(query):
-		return false
-
-	var clearance_origin := probe_origin - Vector2(0.0, vault_obstacle_height)
-	query.from = clearance_origin
-	query.to = clearance_origin + probe_offset
-	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+	return is_holding_chase_position
 
 func _apply_facing(direction: float) -> void:
 	sprite.flip_h = direction > 0

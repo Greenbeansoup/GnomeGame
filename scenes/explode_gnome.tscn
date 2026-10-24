@@ -1,5 +1,9 @@
 [gd_scene format=4 uid="uid://cwrqfcljfofay"]
 
+[ext_resource type="Script" uid="uid://qmj0pp57p5e1" path="res://scripts/explode_gnome.gd" id="1_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/pursuit_behavior.tscn" id="2_pursuit"]
+[ext_resource type="PackedScene" path="res://scenes/vault_behavior.tscn" id="3_vault"]
+
 [sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_kc4xc"]
 _data = PackedByteArray("AAADAAUAAAABAAAAgAAAAIAAAADyAAAAUklGRuoAAABXRUJQVlA4TN4AAAAvf8AfEEdgJJLU9Ml3/4CmCw4yDQghvIIoY9qKRUkAIGgO90ZmFfMfAADIwXA5QWa/tzrXAbi17UhSNDPoFG7FQAiTQsufRT8Guaz128Xqypud70NE/yfA/v3/J06XO8HFkNA6JQAtwMyFTgg36RMCaktK4RSAKzkWwF3IkABMLKROsSDgrgQgcdLxJRKACWcgMpVOOF4BnXsD7p62OWWsgcenbd7q8O2g6d5zkBw69yy+bTKNxVFVSiyyeC9j94OjaliTIVcW2Uz2vs2V20qd2fvOXvuuyfQ3ve/s2wE=")
 size_override = Vector2(128, 128)
@@ -22,11 +26,16 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g4v7s"]
 size = Vector2(15, 16)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_detection"]
+size = Vector2(600, 47)
+
 [node name="ExplodeGnome" type="CharacterBody2D" unique_id=1032712448]
+script = ExtResource("1_enemy")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1147762659]
 texture_filter = 1
-position = Vector2(-8, -64)
+position = Vector2(8, -64)
+scale = Vector2(-1, 1)
 sprite_frames = SubResource("SpriteFrames_s1qeg")
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
@@ -49,3 +58,34 @@ metadata/_aseprite_wizard_source_file_hash_ = "886ce5a3965f3d64a5fe57d295eda5b2"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1029670291]
 position = Vector2(0, -8)
 shape = SubResource("RectangleShape2D_g4v7s")
+
+[node name="DetectArea" type="Area2D" parent="." unique_id=1592282281]
+position = Vector2(0, -8)
+collision_layer = 0
+monitorable = false
+
+[node name="VaultBehavior" parent="." node_paths=PackedStringArray("body_shape") instance=ExtResource("3_vault")]
+body_shape = NodePath("../CollisionShape2D")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectArea" unique_id=1169190484]
+position = Vector2(0, -15.5)
+shape = SubResource("RectangleShape2D_detection")
+
+[node name="AggroSightCone" type="Area2D" parent="." unique_id=2029995119]
+collision_layer = 0
+monitorable = false
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="AggroSightCone" unique_id=1094436581]
+position = Vector2(0, 44)
+polygon = PackedVector2Array(1, -52, -65, 134, -269, 102, -329, 4, -332, -86, -257, -189, -72, -225)
+
+[node name="LineOfSight" type="RayCast2D" parent="." unique_id=937914911]
+position = Vector2(-5, -9)
+
+[node name="PursuitBehavior" parent="." unique_id=388940612 node_paths=PackedStringArray("detect_area", "aggro_sight", "line_of_sight", "body_shape") instance=ExtResource("2_pursuit")]
+detect_area = NodePath("../DetectArea")
+aggro_sight = NodePath("../AggroSightCone")
+line_of_sight = NodePath("../LineOfSight")
+body_shape = NodePath("../CollisionShape2D")
+automatic_update = false
+rear_awareness_range = 120.0
