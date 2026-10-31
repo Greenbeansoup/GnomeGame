@@ -13,7 +13,8 @@ func _ready() -> void:
 	pursuit.aggro_sight.scale.x = -pursuit.facing_direction
 	_on_facing_changed(pursuit.facing_direction)
 	pursuit.facing_changed.connect(_on_facing_changed)
-	sprite.play(&"default")
+	sprite.sprite_frames.set_animation_speed("idle", 0.5)
+	sprite.play("idle")
 
 
 func _physics_process(delta: float) -> void:

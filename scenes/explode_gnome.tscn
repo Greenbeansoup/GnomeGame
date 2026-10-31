@@ -4,22 +4,29 @@
 [ext_resource type="PackedScene" path="res://scenes/pursuit_behavior.tscn" id="2_pursuit"]
 [ext_resource type="PackedScene" path="res://scenes/vault_behavior.tscn" id="3_vault"]
 
-[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_kc4xc"]
-_data = PackedByteArray("AAADAAUAAAABAAAAgAAAAIAAAADyAAAAUklGRuoAAABXRUJQVlA4TN4AAAAvf8AfEEdgJJLU9Ml3/4CmCw4yDQghvIIoY9qKRUkAIGgO90ZmFfMfAADIwXA5QWa/tzrXAbi17UhSNDPoFG7FQAiTQsufRT8Guaz128Xqypud70NE/yfA/v3/J06XO8HFkNA6JQAtwMyFTgg36RMCaktK4RSAKzkWwF3IkABMLKROsSDgrgQgcdLxJRKACWcgMpVOOF4BnXsD7p62OWWsgcenbd7q8O2g6d5zkBw69yy+bTKNxVFVSiyyeC9j94OjaliTIVcW2Uz2vs2V20qd2fvOXvuuyfQ3ve/s2wE=")
-size_override = Vector2(128, 128)
+[sub_resource type="PortableCompressedTexture2D" id="PortableCompressedTexture2D_np00k"]
+_data = PackedByteArray("AAADAAUAAAABAAAAAAEAAIAAAAAyAQAAUklGRioBAABXRUJQVlA4TB4BAAAv/8AfEEdgJJLU9Ml3/4CmCw4yDQghvIIoY9qKRUkAIGgO90ZmFfMfAADIwXA5QWa/tzrXAbiRJMlxms/GUoUNNOFcwOj3TNuwKt8dqJQOdmNPG3QENUT0n5HbtpHUdrZTQGA+Afl1+N/hf4f//Zcq8p1ZxN3o1HY7O0lpt/N4KsJuZ1rBHtxyI7ADt9Rm39J149nIouxWOG8VZTc6yR24JWdUdjvbTEt+dVpyJJ1nXbcym5MUdoMbzR26bjjzdCMh6/YB8v37vq66bpVx2nrTdYuxeui64SP62Eh3yzztYfIq61a3emut5rslFm28fci64aOPuTuqqhsilmipnyPbDR91XeK+ZP449cEtce51mp7wNz1V2bmn0fi+17kB")
+size_override = Vector2(256, 128)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_n085u"]
-atlas = SubResource("PortableCompressedTexture2D_kc4xc")
+[sub_resource type="AtlasTexture" id="AtlasTexture_s1s4m"]
+atlas = SubResource("PortableCompressedTexture2D_np00k")
 region = Rect2(0, 0, 128, 128)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_s1qeg"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_a8qul"]
+atlas = SubResource("PortableCompressedTexture2D_np00k")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_jeyqj"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_n085u")
+"texture": SubResource("AtlasTexture_s1s4m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a8qul")
 }],
 "loop": 1,
-"name": &"default",
+"name": &"idle",
 "speed": 10.0
 }]
 
@@ -36,7 +43,8 @@ script = ExtResource("1_enemy")
 texture_filter = 1
 position = Vector2(8, -64)
 scale = Vector2(-1, 1)
-sprite_frames = SubResource("SpriteFrames_s1qeg")
+sprite_frames = SubResource("SpriteFrames_jeyqj")
+animation = &"idle"
 metadata/_aseprite_wizard_interface_config_ = {
 "pending_changes": {}
 }
@@ -53,7 +61,7 @@ metadata/_aseprite_wizard_config_ = {
 "source": "res://assets/sprites/Explode Gnome Boss.aseprite",
 "source_uid": 1685534431268348727
 }
-metadata/_aseprite_wizard_source_file_hash_ = "886ce5a3965f3d64a5fe57d295eda5b2"
+metadata/_aseprite_wizard_source_file_hash_ = "919a6d9fcc85344f380f458e912937ef"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1029670291]
 position = Vector2(0, -8)
@@ -64,12 +72,12 @@ position = Vector2(0, -8)
 collision_layer = 0
 monitorable = false
 
-[node name="VaultBehavior" parent="." node_paths=PackedStringArray("body_shape") instance=ExtResource("3_vault")]
-body_shape = NodePath("../CollisionShape2D")
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectArea" unique_id=1169190484]
 position = Vector2(0, -15.5)
 shape = SubResource("RectangleShape2D_detection")
+
+[node name="VaultBehavior" parent="." unique_id=653048210 node_paths=PackedStringArray("body_shape") instance=ExtResource("3_vault")]
+body_shape = NodePath("../CollisionShape2D")
 
 [node name="AggroSightCone" type="Area2D" parent="." unique_id=2029995119]
 collision_layer = 0

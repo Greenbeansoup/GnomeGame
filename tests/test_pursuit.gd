@@ -148,6 +148,12 @@ func _run() -> void:
 	var gnome = load("res://scenes/explode_gnome.tscn").instantiate()
 	root.add_child(gnome)
 	gnome.set_physics_process(false)
+	check(gnome.sprite.is_playing(), "Explode gnome plays its scene-selected animation on startup")
+	check(gnome.sprite.sprite_frames.get_frame_count(gnome.sprite.animation) == 2, "Explode gnome idle animation contains both imported frames")
+	var displayed_frames: Array[int] = [gnome.sprite.frame]
+	gnome.sprite.frame_changed.connect(func(): displayed_frames.append(gnome.sprite.frame))
+	await create_timer(0.35).timeout
+	check(displayed_frames.has(0) and displayed_frames.has(1), "Explode gnome idle animation displays both frames")
 	var gnome_target := CharacterBody2D.new()
 	gnome_target.add_to_group("player")
 	var gnome_target_shape := CollisionShape2D.new()
