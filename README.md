@@ -4,6 +4,19 @@
 
 This project commits Aseprite Wizard under `addons/` so teammates can clone the repo with the importer plugin available. Beehave is intentionally not committed; the export workflow pulls a known Beehave version from GitHub during CI builds.
 
+### Music assets (Git LFS)
+
+Music WAV files under `assets/music/` are tracked with Git LFS; small sound effects remain in regular Git. Install Git LFS before cloning, then run these commands in the repository before opening Godot:
+
+```sh
+git lfs install --local
+git lfs pull
+```
+
+Add and commit WAV files normally; Git stores small LFS pointers while your working copy retains the full audio. Commit the corresponding `.wav.import` files as regular Git files. Both export workflows already enable LFS downloads.
+
+When enabling LFS on an existing checkout, run `git add --renormalize -- "assets/music/*.wav"` to stage tracked music WAV files as LFS pointers, and add any new WAV files normally. This does not rewrite older commits or remove audio already stored in Git history. GitHub LFS storage and download bandwidth limits still apply; LFS does not reduce audio size or exported game size.
+
 ### Aseprite imports
 
 Some sprites are imported from `.aseprite` source files through Aseprite Wizard. Godot must be able to run the Aseprite executable when those assets are imported or reimported.

@@ -73,7 +73,6 @@ func _ready():
 
 	play_idle_animation()
 	animation_player.animation_finished.connect(_on_animation_finished)
-	pursuit.pursuit_changed.connect(_set_chase_music_active)
 	pursuit.state_changed.connect(_on_pursuit_state_changed)
 	pursuit.pursuit_range = pursuit_range
 	pursuit.chase_speed = chase_speed
@@ -87,6 +86,11 @@ func _ready():
 
 
 func _on_pursuit_state_changed(_previous: PursuitBehavior.State, state: PursuitBehavior.State) -> void:
+	# Keep chase music through IDLE_ACTIVE (watching); only stop once fully idle.
+	if state == PursuitBehavior.State.PURSUIT:
+		_set_chase_music_active(true)
+	elif state == PursuitBehavior.State.IDLE:
+		_set_chase_music_active(false)
 	if state == PursuitBehavior.State.IDLE:
 		attack_recovery_timer = 0.0
 		spotted_animation_finished = false
@@ -223,11 +227,6 @@ func die_from_pendulum() -> void:
 	play_animation("kill")
 
 func play_animation(anim_name: String, speed_scale: float = 1.0) -> void:
-	var watching_without_target: bool = anim_name == "idleactive" \
-		and not beehave_tree.blackboard.get_value("is_player_in_detect_area", false) \
-		and not beehave_tree.blackboard.get_value("has_last_known_player_position", false)
-	if anim_name == "idle" or watching_without_target:
-		_set_chase_music_active(false)
 	current_animation = anim_name
 	animation_player.play(anim_name, -1.0, speed_scale)
 

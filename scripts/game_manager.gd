@@ -5,6 +5,8 @@ extends Node2D
 @export var test_arena_scene: PackedScene
 @export var main_menu_scene: PackedScene
 @export var chase_music: AudioStream = preload("res://assets/music/NastyRat.wav")
+@export var background_music: AudioStream = preload("res://assets/music/OutsetCavernExtended.wav")
+@export var menu_music: AudioStream = preload("res://assets/music/GnomeScreen.wav")
 @export_range(0.0, 5.0, 0.05) var background_music_resume_delay := 0.75
 @export_range(0.0, 5.0, 0.05) var background_music_fade_in_duration := 1.0
 
@@ -13,7 +15,6 @@ extends Node2D
 @onready var ui_layer = $UI
 @onready var current_scene_holder = $CurrentScene
 @onready var music_player: AudioStreamPlayer = $MusicPlayer
-@onready var background_music: AudioStream = music_player.stream
 @onready var music_volume: float = music_player.volume_linear
 
 var current_level_scene: PackedScene
@@ -66,6 +67,11 @@ func show_main_menu():
 	menu.start_game_pressed.connect(start_level.bind(level_1_scene))
 	menu.start_test_arena_pressed.connect(start_level.bind(test_arena_scene))
 	menu.exit_pressed.connect(_on_exit_pressed)
+
+	# Play menu music
+	music_player.stream = menu_music
+	music_player.volume_linear = music_volume
+	music_player.play()
 
 func set_chase_music_active(source: Node, active: bool) -> void:
 	var source_id := source.get_instance_id()
@@ -132,6 +138,11 @@ func start_level(level_scene: PackedScene):
 	# Remove the main menu
 	_clear_children(menu_holder)
 	_replace_current_level()
+
+	# Play background music for the level
+	music_player.stream = background_music
+	music_player.volume_linear = music_volume
+	music_player.play()
 
 func restart_current_level():
 	if not current_level_scene:
