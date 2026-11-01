@@ -11,6 +11,7 @@ const GNOME_LEGS_SCENE = preload("res://scenes/gnome_legs.tscn")
 
 # Abilities gated behind these can be unlocked/locked at runtime (e.g. via pickups).
 @export var sprint_unlocked: bool = true
+@export_range(0.01, 5.0, 0.01, "or_greater") var sprint_wind_up_duration: float = 0.3
 @export var earthwalk_unlocked: bool = true
 @export var ground_pound_unlocked: bool = true
 
@@ -255,7 +256,12 @@ func _process_default_movement(delta):
 			is_sprinting = sprint_unlocked and Input.is_action_pressed("sprint")
 			var target_speed = direction * (SPRINT_SPEED if is_sprinting else SPEED)
 			if grounded:
-				velocity.x = target_speed
+				if is_sprinting:
+					var forward_speed = clampf(velocity.x * direction, SPEED, SPRINT_SPEED)
+					var sprint_acceleration = (SPRINT_SPEED - SPEED) / sprint_wind_up_duration
+					velocity.x = direction * move_toward(forward_speed, SPRINT_SPEED, sprint_acceleration * delta)
+				else:
+					velocity.x = target_speed
 			else:
 				var horizontal_change = move_toward(velocity.x, target_speed, AIR_ACCELERATION) - velocity.x
 				_apply_air_steering(Vector2(horizontal_change, 0.0), delta)

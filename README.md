@@ -43,6 +43,8 @@ The Beehave autoloads in `project.godot` intentionally use `res://addons/beehave
 
 ## Player wall impacts
 
+Grounded sprinting accelerates from walking speed to maximum sprint speed over `sprint_wind_up_duration` (default 0.3 seconds, configurable on the player in the Inspector). Walking, stopping, and airborne steering retain their existing responsiveness. Reversing direction restarts the wind-up from walking speed. Wall smacks still require actual maximum sprint speed, so holding sprint against a nearby wall does not build speed or cause a stun.
+
 Wall impacts keep their initial smack animation. If the player retains upward momentum while airborne during the smack cycle, the follow-up `spinningclock` animation continues through the apex and descent until landing. With gameplay input held, landing cancels that cycle immediately and restores the normal animation for the current input (sprinting, walking, or idle), even if the initial smack animation has not finished. Without input, landing continues into the matching stunned animation; residual momentum alone does not cancel it. Grounded stun persists until gameplay input resumes. Impacts without an upward spin retain their existing fall/stunned animations, and fresh movement/action input still cancels a smack early.
 
 Starting a dig or entering long legs mode also clears the smack/stunned state permanently, so `stunnedextended` or `stunnedfacedownextended` cannot resume after the dig animation finishes or long legs mode ends.
@@ -51,6 +53,7 @@ Run the focused regression checks with your Godot executable:
 
 ```sh
 godot --headless --path . --script tests/test_player_wall_smack.gd
+godot --headless --path . --script tests/test_player_sprint.gd
 ```
 
 ## Enemy pursuit
