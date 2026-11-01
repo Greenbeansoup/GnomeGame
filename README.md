@@ -41,6 +41,18 @@ Beehave is vendored during GitHub Actions exports from `bitbrain/beehave` tag `v
 
 The Beehave autoloads in `project.godot` intentionally use `res://addons/beehave/...` paths instead of `uid://...` references. Local Beehave installs can generate different `.uid` files on different machines, so do not commit `project.godot` changes that only rewrite those Beehave autoloads back to `uid://` values.
 
+## Player wall impacts
+
+Wall impacts keep their initial smack animation. If the player retains upward momentum while airborne during the smack cycle, the follow-up `spinningclock` animation continues through the apex and descent until landing. With gameplay input held, landing cancels that cycle immediately and restores the normal animation for the current input (sprinting, walking, or idle), even if the initial smack animation has not finished. Without input, landing continues into the matching stunned animation; residual momentum alone does not cancel it. Grounded stun persists until gameplay input resumes. Impacts without an upward spin retain their existing fall/stunned animations, and fresh movement/action input still cancels a smack early.
+
+Starting a dig or entering long legs mode also clears the smack/stunned state permanently, so `stunnedextended` or `stunnedfacedownextended` cannot resume after the dig animation finishes or long legs mode ends.
+
+Run the focused regression checks with your Godot executable:
+
+```sh
+godot --headless --path . --script tests/test_player_wall_smack.gd
+```
+
 ## Enemy pursuit
 
 Instance `scenes/pursuit_behavior.tscn` beneath a `CharacterBody2D` enemy. The component owns its Beehave tree and the shared flow: idle, detection, pursuit, active idle (watching), then idle. Losing sight preserves the last known position; reaching it or getting stuck starts the watch timeout. A target seen while watching resumes pursuit immediately.

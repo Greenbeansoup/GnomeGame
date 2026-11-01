@@ -103,6 +103,7 @@ var attack_push_timer = 0.0
 var is_attack_pushed = false
 enum WallSmackState { NONE, SMACK, FALL, STUNNED }
 var wall_smack_state = WallSmackState.NONE
+var wall_smack_spin_until_landing = false
 # Distinguishes which impact started the current smack/fall cycle, since both share the
 # same WallSmackState machine and follow-up falling animations.
 enum SmackTrigger { WALL, WALL_FORWARD, CEILING }
@@ -212,6 +213,7 @@ func _process_default_movement(delta):
 	# must not repeatedly cancel and retrigger the impact against the same wall.
 	if wall_smack_state != WallSmackState.NONE and (Input.is_action_just_pressed("left") or Input.is_action_just_pressed("right") or Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("down") or Input.is_action_just_pressed("dig")):
 		wall_smack_state = WallSmackState.NONE
+		wall_smack_spin_until_landing = false
 	# 1. APPLY GRAVITY
 	if not is_on_floor() and not is_earthwalking:
 		# Ground pound only cancels horizontal momentum and adds an initial downward kick;
@@ -412,10 +414,31 @@ func _check_for_head_smack(impact_velocity: Vector2):
 
 
 func _update_wall_smack_landing():
-	if wall_smack_state == WallSmackState.FALL and is_on_floor():
+	if wall_smack_state == WallSmackState.NONE:
+		return
+
+	# Remember upward momentum even during the impact animation; a short rise can
+	# end before that animation finishes, and the spin must survive the apex.
+	if not is_on_floor() and velocity.y < 0.0:
+		wall_smack_spin_until_landing = true
+
+	if wall_smack_spin_until_landing and is_on_floor():
+		wall_smack_state = WallSmackState.STUNNED
+		wall_smack_spin_until_landing = false
+	elif wall_smack_state == WallSmackState.FALL and is_on_floor():
 		wall_smack_state = WallSmackState.STUNNED
 	elif wall_smack_state == WallSmackState.STUNNED and not is_on_floor():
 		wall_smack_state = WallSmackState.FALL
+
+	if wall_smack_state == WallSmackState.STUNNED and is_on_floor() and _has_active_gameplay_input():
+		wall_smack_state = WallSmackState.NONE
+
+
+func _has_active_gameplay_input() -> bool:
+	for action in [&"left", &"right", &"up", &"down", &"jump", &"sprint", &"dig", &"ground_pound", &"stretch", &"explode"]:
+		if Input.is_action_pressed(action):
+			return true
+	return false
 
 
 func _apply_air_steering(steering_change: Vector2, delta: float):
@@ -448,6 +471,8 @@ func enter_long_legs_mode() -> void:
 	if not is_on_floor():
 		return
 
+	wall_smack_state = WallSmackState.NONE
+	wall_smack_spin_until_landing = false
 	is_earthwalking = false
 	is_long_legs = true
 	movement_mode = MovementMode.LONG_LEGS
@@ -877,6 +902,7 @@ func respawn_at(spawn_position: Vector2) -> void:
 	is_attack_pushed = false
 	attack_push_timer = 0.0
 	wall_smack_state = WallSmackState.NONE
+	wall_smack_spin_until_landing = false
 	velocity = Vector2.ZERO
 	respawn_invulnerability_timer = RESPAWN_INVULNERABILITY_DURATION
 	if collision_shape_2d:
@@ -937,6 +963,8 @@ func _play_if_different(animation_name: StringName):
 
 func _update_animations(direction: float):
 	if is_digging:
+		wall_smack_state = WallSmackState.NONE
+		wall_smack_spin_until_landing = false
 		var dig_animation = _get_dig_animation()
 		if animated_sprite_2d.animation != dig_animation:
 			if is_digging_out:
@@ -949,8 +977,7 @@ func _update_animations(direction: float):
 	if wall_smack_state != WallSmackState.NONE:
 		var wall_smack_animation = _get_smack_animation() if wall_smack_state == WallSmackState.SMACK else &"wallsmack"
 		if wall_smack_state == WallSmackState.FALL:
-			# The smack can pop the character upward before gravity takes back over.
-			if velocity.y < 0.0:
+			if wall_smack_spin_until_landing:
 				wall_smack_animation = &"spinningclock"
 			elif smack_trigger == SmackTrigger.WALL_FORWARD:
 				wall_smack_animation = &"fallafterwallsmackforward"
