@@ -50,6 +50,21 @@ func _run() -> void:
 		player._update_animations(1.0)
 		check(player.animated_sprite_2d.animation == &"spinningclock", "Spin continues throughout descent")
 
+		for action in [&"left", &"right", &"jump", &"down", &"dig"]:
+			Input.action_press(action)
+			await physics_frame
+			check(Input.is_action_just_pressed(action), "Cartwheel test uses fresh input")
+			var previous_horizontal_speed: float = player.velocity.x
+			player._process_default_movement(1.0 / 60.0)
+			player._update_wall_smack_landing()
+			player._update_animations(Input.get_axis("left", "right"))
+			check(player.wall_smack_state == Player.WallSmackState.FALL and player.wall_smack_spin_until_landing, "Fresh airborne input cannot cancel the cartwheel cycle")
+			check(player.animated_sprite_2d.animation == &"spinningclock", "Cartwheel animation survives airborne input")
+			if action == &"left" or action == &"right":
+				check(player.velocity.x != previous_horizontal_speed, "Air steering still responds during the cartwheel")
+			Input.action_release(action)
+			await physics_frame
+
 		player.position = Vector2.ZERO
 		player.velocity = Vector2(40.0, 10.0)
 		await physics_frame
